@@ -1,0 +1,411 @@
+{
+    "cursor": "",
+    "events": [
+        {
+            "available_on_brokers": false,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11HOUSAC",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "HOU at SAC (Jan 11)",
+            "title": "Houston at Sacramento"
+        },
+        {
+            "available_on_brokers": false,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11ATLGSW",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "ATL at GSW (Jan 11)",
+            "title": "Atlanta at Golden State"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11WASPHX",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "WAS at PHX (Jan 11)",
+            "title": "Washington at Phoenix"
+        },
+        {
+            "available_on_brokers": false,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11MILDEN",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "MIL at DEN (Jan 11)",
+            "title": "Milwaukee at Denver"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11SASMIN",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "SAS at MIN (Jan 11)",
+            "title": "San Antonio at Minnesota"
+        },
+        {
+            "available_on_brokers": false,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11MIAOKC",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "MIA at OKC (Jan 11)",
+            "title": "Miami at Oklahoma City"
+        },
+        {
+            "available_on_brokers": false,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11PHITOR",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "PHI at TOR (Jan 11)",
+            "title": "Philadelphia at Toronto"
+        },
+        {
+            "available_on_brokers": false,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11NYKPOR",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "NYK at POR (Jan 11)",
+            "title": "New York at Portland"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11BKNMEM",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "BKN at MEM (Jan 11)",
+            "title": "Brooklyn at Memphis"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN11NOPORL",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "NOP at ORL (Jan 11)",
+            "title": "New Orleans at Orlando"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN10CHAUTA",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "CHA at UTA (Jan 10)",
+            "title": "Charlotte at Utah"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN10SASBOS",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "SAS at BOS (Jan 10)",
+            "title": "San Antonio at Boston"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN10DALCHI",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "DAL at CHI (Jan 10)",
+            "title": "Dallas at Chicago"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN10LACDET",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "LAC at DET (Jan 10)",
+            "title": "Los Angeles C at Detroit"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN10MIAIND",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "MIA at IND (Jan 10)",
+            "title": "Miami at Indiana"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN10MINCLE",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "MIN at CLE (Jan 10)",
+            "title": "Minnesota at Cleveland"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09MILLAL",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "MIL at LAL (Jan 9)",
+            "title": "Milwaukee at Los Angeles L"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09SACGSW",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "SAC at GSW (Jan 9)",
+            "title": "Sacramento at Golden State"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09HOUPOR",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "HOU at POR (Jan 9)",
+            "title": "Houston at Portland"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09NYKPHX",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "NYK at PHX (Jan 9)",
+            "title": "New York at Phoenix"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09ATLDEN",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "ATL at DEN (Jan 9)",
+            "title": "Atlanta at Denver"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09OKCMEM",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "OKC at MEM (Jan 9)",
+            "title": "Oklahoma City at Memphis"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09LACBKN",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "LAC at BKN (Jan 9)",
+            "title": "Los Angeles C at Brooklyn"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09TORBOS",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "TOR at BOS (Jan 9)",
+            "title": "Toronto at Boston"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09PHIORL",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "PHI at ORL (Jan 9)",
+            "title": "Philadelphia at Orlando"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN09NOPWAS",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "NOP at WAS (Jan 9)",
+            "title": "New Orleans at Washington"
+        },
+        {
+            "available_on_brokers": true,
+            "category": "Sports",
+            "collateral_return_type": "MECNET",
+            "event_ticker": "KXNBAGAME-26JAN08MIACHI",
+            "mutually_exclusive": true,
+            "product_metadata": {
+                "competition": "Pro Basketball (M)",
+                "competition_scope": "Game"
+            },
+            "series_ticker": "KXNBAGAME",
+            "strike_period": "",
+            "sub_title": "MIA at CHI (Jan 8)",
+            "title": "Miami at Chicago"
+        }
+    ],
+    "milestones": []
+}

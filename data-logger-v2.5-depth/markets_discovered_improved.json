@@ -1,0 +1,447 @@
+{
+  "_comment": "Auto-discovered NBA markets",
+  "_generated_at": "2025-12-29T15:46:13.969672",
+  "_note": "REVIEW AND EDIT: Team names may need correction. Add Polymarket IDs manually.",
+  "markets": [
+    {
+      "event_id": "kxnbagame_25dec31porokc_por",
+      "description": "Portland vs Oklahoma City Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T01:00:00Z",
+      "teams": {
+        "yes_team": "Portland",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31POROKC-POR"
+        },
+        "yes_refers_to": "Portland"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31porokc_okc",
+      "description": "Portland vs Oklahoma City Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T01:00:00Z",
+      "teams": {
+        "yes_team": "Oklahoma City",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31POROKC-OKC"
+        },
+        "yes_refers_to": "Oklahoma City"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31nyksas_sas",
+      "description": "New York vs San Antonio Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T00:00:00Z",
+      "teams": {
+        "yes_team": "San Antonio",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31NYKSAS-SAS"
+        },
+        "yes_refers_to": "San Antonio"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31nyksas_nyk",
+      "description": "New York vs San Antonio Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T00:00:00Z",
+      "teams": {
+        "yes_team": "New York",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31NYKSAS-NYK"
+        },
+        "yes_refers_to": "New York"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31nopchi_nop",
+      "description": "New Orleans vs Chicago Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T00:00:00Z",
+      "teams": {
+        "yes_team": "New Orleans",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31NOPCHI-NOP"
+        },
+        "yes_refers_to": "New Orleans"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31nopchi_chi",
+      "description": "New Orleans vs Chicago Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T00:00:00Z",
+      "teams": {
+        "yes_team": "Chicago",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31NOPCHI-CHI"
+        },
+        "yes_refers_to": "Chicago"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31wasmil_was",
+      "description": "Washington vs Milwaukee Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T01:00:00Z",
+      "teams": {
+        "yes_team": "Washington",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31WASMIL-WAS"
+        },
+        "yes_refers_to": "Washington"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31wasmil_mil",
+      "description": "Washington vs Milwaukee Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T01:00:00Z",
+      "teams": {
+        "yes_team": "Milwaukee",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31WASMIL-MIL"
+        },
+        "yes_refers_to": "Milwaukee"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31dentor_tor",
+      "description": "Denver vs Toronto Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T00:30:00Z",
+      "teams": {
+        "yes_team": "Toronto",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31DENTOR-TOR"
+        },
+        "yes_refers_to": "Toronto"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31dentor_den",
+      "description": "Denver vs Toronto Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-15T00:30:00Z",
+      "teams": {
+        "yes_team": "Denver",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31DENTOR-DEN"
+        },
+        "yes_refers_to": "Denver"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31minatl_min",
+      "description": "Minnesota vs Atlanta Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T20:00:00Z",
+      "teams": {
+        "yes_team": "Minnesota",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31MINATL-MIN"
+        },
+        "yes_refers_to": "Minnesota"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31minatl_atl",
+      "description": "Minnesota vs Atlanta Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T20:00:00Z",
+      "teams": {
+        "yes_team": "Atlanta",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31MINATL-ATL"
+        },
+        "yes_refers_to": "Atlanta"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31phxcle_phx",
+      "description": "Phoenix vs Cleveland Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T20:30:00Z",
+      "teams": {
+        "yes_team": "Phoenix",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31PHXCLE-PHX"
+        },
+        "yes_refers_to": "Phoenix"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31phxcle_cle",
+      "description": "Phoenix vs Cleveland Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T20:30:00Z",
+      "teams": {
+        "yes_team": "Cleveland",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31PHXCLE-CLE"
+        },
+        "yes_refers_to": "Cleveland"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31orlind_orl",
+      "description": "Orlando vs Indiana Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T20:00:00Z",
+      "teams": {
+        "yes_team": "Orlando",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31ORLIND-ORL"
+        },
+        "yes_refers_to": "Orlando"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31orlind_ind",
+      "description": "Orlando vs Indiana Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T20:00:00Z",
+      "teams": {
+        "yes_team": "Indiana",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31ORLIND-IND"
+        },
+        "yes_refers_to": "Indiana"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31gswcha_gsw",
+      "description": "Golden State vs Charlotte Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T18:00:00Z",
+      "teams": {
+        "yes_team": "Golden State",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31GSWCHA-GSW"
+        },
+        "yes_refers_to": "Golden State"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec31gswcha_cha",
+      "description": "Golden State vs Charlotte Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T18:00:00Z",
+      "teams": {
+        "yes_team": "Charlotte",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC31GSWCHA-CHA"
+        },
+        "yes_refers_to": "Charlotte"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec30bosuta_uta",
+      "description": "Boston vs Utah Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T02:00:00Z",
+      "teams": {
+        "yes_team": "Utah",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC30BOSUTA-UTA"
+        },
+        "yes_refers_to": "Utah"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    },
+    {
+      "event_id": "kxnbagame_25dec30bosuta_bos",
+      "description": "Boston vs Utah Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-14T02:00:00Z",
+      "teams": {
+        "yes_team": "Boston",
+        "note": "Kalshi YES = this team wins"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-25DEC30BOSUTA-BOS"
+        },
+        "yes_refers_to": "Boston"
+      },
+      "polymarket": {
+        "enabled": false,
+        "markets": {},
+        "_note": "Add Polymarket condition ID if you want Polymarket data"
+      }
+    }
+  ]
+}

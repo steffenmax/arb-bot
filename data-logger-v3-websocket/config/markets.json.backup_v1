@@ -1,0 +1,436 @@
+{
+  "_comment": "Active markets updated for NBA games on 2026-01-06",
+  "_generated_at": "2026-01-06T00:00:00Z",
+  "_note": "NFL playoff games + Tonight's NBA games",
+  "markets": [
+    {
+      "event_id": "kxnflgame_26jan10gbchi",
+      "description": "Green Bay at Chicago Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-25T01:00:00Z",
+      "teams": {
+        "team_a": "Chicago",
+        "team_b": "Green Bay",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN10GBCHI-CHI",
+          "opponent": "KXNFLGAME-26JAN10GBCHI-GB"
+        },
+        "market_a_refers_to": "Chicago",
+        "market_b_refers_to": "Green Bay"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-gb-chi-2026-01-10"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "CHI": "13981385225696444678390540497320404976802298924493471598088103986401281808517",
+        "GB": "16733339450778272272777651556206571354576285423443476742857616934917902333657"
+      },
+      "poly_condition_id": "0x889771fe1ffdfa067c4493ae89a11e1d2cb2699b0bb048e00ce8ba10d27dad84",
+      "poly_title": "Packers vs. Bears",
+      "home_team": "GB",
+      "away_team": "CHI",
+      "poly_event_id": "145826"
+    },
+    {
+      "event_id": "kxnflgame_26jan10lacar",
+      "description": "Los Angeles R at Carolina Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-24T21:30:00Z",
+      "teams": {
+        "team_a": "Carolina",
+        "team_b": "Los Angeles R",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN10LACAR-CAR",
+          "opponent": "KXNFLGAME-26JAN10LACAR-LA"
+        },
+        "market_a_refers_to": "Carolina",
+        "market_b_refers_to": "Los Angeles R"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-la-car-2026-01-10"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "CAR": "915627592033002568512857939649312443434425908803980109605482558466978444816",
+        "LAR": "78771016858683590931968399206043033368231163700315025308842883779104149970413"
+      },
+      "poly_condition_id": "0x32102e4ab8969621cab85949c3c571b5008a4aa30d31022fa659d0ed287686a9",
+      "poly_title": "Rams vs. Panthers",
+      "home_team": "LAR",
+      "away_team": "CAR",
+      "poly_event_id": "145825"
+    },
+    {
+      "event_id": "kxnflgame_26jan11sfphi",
+      "description": "San Francisco at Philadelphia Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-25T21:30:00Z",
+      "teams": {
+        "team_a": "Philadelphia",
+        "team_b": "San Francisco",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN11SFPHI-PHI",
+          "opponent": "KXNFLGAME-26JAN11SFPHI-SF"
+        },
+        "market_a_refers_to": "Philadelphia",
+        "market_b_refers_to": "San Francisco"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-sf-phi-2026-01-11"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {},
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "SF",
+      "away_team": "PHI",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnflgame_26jan12houpit",
+      "description": "Houston at Pittsburgh Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-27T01:15:00Z",
+      "teams": {
+        "team_a": "Houston",
+        "team_b": "Pittsburgh",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN12HOUPIT-HOU",
+          "opponent": "KXNFLGAME-26JAN12HOUPIT-PIT"
+        },
+        "market_a_refers_to": "Houston",
+        "market_b_refers_to": "Pittsburgh"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-hou-pit-2026-01-12"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "HOU": "44094268848845008094631477565797455047653830288316821355090380872279581304983",
+        "PIT": "74405919057031726591990777370595920590155604530765555705214385173695068665759"
+      },
+      "poly_condition_id": "0xbfa2065aca0ad40d731bb8d249e14bbffd54a57fe5bbeb6b438f714bf7a564eb",
+      "poly_title": "Texans vs. Steelers",
+      "home_team": "PIT",
+      "away_team": "HOU",
+      "poly_event_id": "145828"
+    },
+    {
+      "event_id": "kxnflgame_26jan11bufjac",
+      "description": "Buffalo at Jacksonville Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-26T01:00:00Z",
+      "teams": {
+        "team_a": "Jacksonville",
+        "team_b": "Buffalo",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN11BUFJAC-JAC",
+          "opponent": "KXNFLGAME-26JAN11BUFJAC-BUF"
+        },
+        "market_a_refers_to": "Jacksonville",
+        "market_b_refers_to": "Buffalo"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-buf-jax-2026-01-11"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "JAC": "55137665569544374405371204705731603419799784809221820732145781711766684917493",
+        "BUF": "13956685932830942820984529200412542483017817009782056613417904667255563287990"
+      },
+      "poly_condition_id": "0x50d6d3fde46f4d141a22712e2a6f356edf8cdddff04242922e806a55ba97c2a8",
+      "poly_title": "Bills vs. Jaguars",
+      "home_team": "BUF",
+      "away_team": "JAC",
+      "poly_event_id": "145827"
+    },
+    {
+      "event_id": "kxnflgame_26jan11lacne",
+      "description": "Los Angeles C at New England Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-26T01:00:00Z",
+      "teams": {
+        "team_a": "New England",
+        "team_b": "Los Angeles C",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN11LACNE-NE",
+          "opponent": "KXNFLGAME-26JAN11LACNE-LAC"
+        },
+        "market_a_refers_to": "New England",
+        "market_b_refers_to": "Los Angeles C"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-lac-ne-2026-01-11"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "NE": "59941152108355173619015529846108720924239120407961464688624549930962416992814",
+        "LAC": "90468297690119961729415596184451710609666058555177444095392763708049826586245"
+      },
+      "poly_condition_id": "0xbbfeecdfdc7feeba06e18f21d13b250d0307bc34606796a8d47442618a19f4be",
+      "poly_title": "Chargers vs. Patriots",
+      "home_team": "LAC",
+      "away_team": "NE",
+      "poly_event_id": "145823"
+    },
+    {
+      "event_id": "kxnbagame_26jan06cleind",
+      "description": "Cleveland vs Indiana Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-07T00:00:00Z",
+      "teams": {
+        "team_a": "Cleveland",
+        "team_b": "Indiana",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN06CLEIND-CLE",
+          "opponent": "KXNBAGAME-26JAN06CLEIND-IND"
+        },
+        "market_a_refers_to": "Cleveland",
+        "market_b_refers_to": "Indiana"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-cle-ind-2026-01-06"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "CLE": "97981087482172112258171990506295158281114411201485119699049266537195717837691",
+        "IND": "8780758277332915516873922860010050458236438428274946630917180194444012522968"
+      },
+      "poly_condition_id": "0xb4d3ad42615b0051af94558c42f07eed577a018e60136f6e2e38bf28a84ae678",
+      "poly_title": "Cavaliers vs. Pacers",
+      "home_team": "IND",
+      "away_team": "CLE",
+      "poly_event_id": "135048"
+    },
+    {
+      "event_id": "kxnbagame_26jan06orlwas",
+      "description": "Orlando vs Washington Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-07T00:00:00Z",
+      "teams": {
+        "team_a": "Orlando",
+        "team_b": "Washington",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN06ORLWAS-ORL",
+          "opponent": "KXNBAGAME-26JAN06ORLWAS-WAS"
+        },
+        "market_a_refers_to": "Orlando",
+        "market_b_refers_to": "Washington"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-orl-was-2026-01-06"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "ORL": "43134863555561433322255507552133768534833653366415152299128938972919273978999",
+        "WAS": "13916951550064108660762545417623586598086264431011741760484573206300944035249"
+      },
+      "poly_condition_id": "0x830abaf0256b97a96cac8cd3ac823addaf254ef395f96d885bddeb5c10f26410",
+      "poly_title": "Magic vs. Wizards",
+      "home_team": "WAS",
+      "away_team": "ORL",
+      "poly_event_id": "135051"
+    },
+    {
+      "event_id": "kxnbagame_26jan06lalnop",
+      "description": "Los Angeles L vs New Orleans Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-07T01:00:00Z",
+      "teams": {
+        "team_a": "Los Angeles L",
+        "team_b": "New Orleans",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN06LALNOP-LAL",
+          "opponent": "KXNBAGAME-26JAN06LALNOP-NOP"
+        },
+        "market_a_refers_to": "Los Angeles L",
+        "market_b_refers_to": "New Orleans"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-lal-nop-2026-01-06"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "LAL": "108824041756334265932712542158056184231093783052694469659834059673122066748832",
+        "NOP": "86779013079664172883908811831313794318863735864737868421697280990610213707691"
+      },
+      "poly_condition_id": "0xe4aba6582d03b5d01ca63775b477ed2f82a45c5296a2a2e549c24abd5b59d903",
+      "poly_title": "Lakers vs. Pelicans",
+      "home_team": "NOP",
+      "away_team": "LAL",
+      "poly_event_id": "135056"
+    },
+    {
+      "event_id": "kxnbagame_26jan06miamin",
+      "description": "Miami vs Minnesota Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-07T01:00:00Z",
+      "teams": {
+        "team_a": "Miami",
+        "team_b": "Minnesota",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN06MIAMIN-MIA",
+          "opponent": "KXNBAGAME-26JAN06MIAMIN-MIN"
+        },
+        "market_a_refers_to": "Miami",
+        "market_b_refers_to": "Minnesota"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-mia-min-2026-01-06"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "MIA": "106704212467318868766612767702737884177439980393445467274514859888665878270248",
+        "MIN": "114792842883821096974290397059121286639310967111333451556563651826094672151793"
+      },
+      "poly_condition_id": "0x9c45f70980f263319038b8d1334f6525067251429276c51f12e20ffec11ed88b",
+      "poly_title": "Heat vs. Timberwolves",
+      "home_team": "MIN",
+      "away_team": "MIA",
+      "poly_event_id": "135053"
+    },
+    {
+      "event_id": "kxnbagame_26jan06sasmem",
+      "description": "San Antonio vs Memphis Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-07T01:00:00Z",
+      "teams": {
+        "team_a": "San Antonio",
+        "team_b": "Memphis",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN06SASMEM-SAS",
+          "opponent": "KXNBAGAME-26JAN06SASMEM-MEM"
+        },
+        "market_a_refers_to": "San Antonio",
+        "market_b_refers_to": "Memphis"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-sas-mem-2026-01-06"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "SAS": "73944865497189956020473009332846663319150298915665167187595284444861787460857",
+        "MEM": "27728038864726788978767531749693600746123267998972345349586858799607678891694"
+      },
+      "poly_condition_id": "0xe39a15c08ba1a49fbd82dd7479f84039bc0bde06aba81fa702101551d93ac451",
+      "poly_title": "Spurs vs. Grizzlies",
+      "home_team": "MEM",
+      "away_team": "SAS",
+      "poly_event_id": "135052"
+    },
+    {
+      "event_id": "kxnbagame_26jan06dalsac",
+      "description": "Dallas vs Sacramento Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-07T04:00:00Z",
+      "teams": {
+        "team_a": "Dallas",
+        "team_b": "Sacramento",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN06DALSAC-DAL",
+          "opponent": "KXNBAGAME-26JAN06DALSAC-SAC"
+        },
+        "market_a_refers_to": "Dallas",
+        "market_b_refers_to": "Sacramento"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-dal-sac-2026-01-06"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "DAL": "44296840962208061761620754580053485159242065303550206685570355164374484944322",
+        "SAC": "97650825092709286739689524230089862498023670399788577888142745153696084413969"
+      },
+      "poly_condition_id": "0xc2a95470fdff397361ee4fed506b87fa9d9e7bbdeaac9efa0141f3bba451ee34",
+      "poly_title": "Mavericks vs. Kings",
+      "home_team": "SAC",
+      "away_team": "DAL",
+      "poly_event_id": "135060"
+    }
+  ]
+}

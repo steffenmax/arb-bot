@@ -1,0 +1,250 @@
+{
+  "_comment": "NFL games for Sunday, January 5, 2026 - CORRECTED with BOTH Kalshi markets per game",
+  "_generated_at": "2026-01-04T20:30:00.000000",
+  "_note": "Excludes completed games (Seahawks/49ers, Panthers/Bucs)",
+  "markets": [
+    {
+      "event_id": "kxnflgame_26jan04arila_la",
+      "description": "Arizona at Los Angeles R Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T21:25:00Z",
+      "teams": {
+        "team_a": "Los Angeles R",
+        "team_b": "Arizona",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04ARILA-LA",
+          "opponent": "KXNFLGAME-26JAN04ARILA-ARI"
+        },
+        "market_a_refers_to": "Los Angeles R",
+        "market_b_refers_to": "Arizona"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-ari-la-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04balpit_pit",
+      "description": "Baltimore at Pittsburgh Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T18:30:00Z",
+      "teams": {
+        "team_a": "Pittsburgh",
+        "team_b": "Baltimore",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04BALPIT-PIT",
+          "opponent": "KXNFLGAME-26JAN04BALPIT-BAL"
+        },
+        "market_a_refers_to": "Pittsburgh",
+        "market_b_refers_to": "Baltimore"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-bal-pit-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04dalnyg_dal",
+      "description": "Dallas at New York G Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T18:00:00Z",
+      "teams": {
+        "team_a": "Dallas",
+        "team_b": "New York G",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04DALNYG-DAL",
+          "opponent": "KXNFLGAME-26JAN04DALNYG-NYG"
+        },
+        "market_a_refers_to": "Dallas",
+        "market_b_refers_to": "New York G"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-dal-nyg-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04detchi_det",
+      "description": "Detroit at Chicago Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T18:00:00Z",
+      "teams": {
+        "team_a": "Detroit",
+        "team_b": "Chicago",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04DETCHI-DET",
+          "opponent": "KXNFLGAME-26JAN04DETCHI-CHI"
+        },
+        "market_a_refers_to": "Detroit",
+        "market_b_refers_to": "Chicago"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-det-chi-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04kclv_kc",
+      "description": "Kansas City at Las Vegas Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T18:00:00Z",
+      "teams": {
+        "team_a": "Kansas City",
+        "team_b": "Las Vegas",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04KCLV-KC",
+          "opponent": "KXNFLGAME-26JAN04KCLV-LV"
+        },
+        "market_a_refers_to": "Kansas City",
+        "market_b_refers_to": "Las Vegas"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-kc-lv-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04lacden_lac",
+      "description": "Los Angeles C at Denver Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T21:25:00Z",
+      "teams": {
+        "team_a": "Los Angeles C",
+        "team_b": "Denver",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04LACDEN-LAC",
+          "opponent": "KXNFLGAME-26JAN04LACDEN-DEN"
+        },
+        "market_a_refers_to": "Los Angeles C",
+        "market_b_refers_to": "Denver"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-lac-den-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04miane_ne",
+      "description": "Miami at New England Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T18:00:00Z",
+      "teams": {
+        "team_a": "New England",
+        "team_b": "Miami",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04MIANE-NE",
+          "opponent": "KXNFLGAME-26JAN04MIANE-MIA"
+        },
+        "market_a_refers_to": "New England",
+        "market_b_refers_to": "Miami"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-mia-ne-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04nyjbuf_nyj",
+      "description": "New York J at Buffalo Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T18:00:00Z",
+      "teams": {
+        "team_a": "New York J",
+        "team_b": "Buffalo",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04NYJBUF-NYJ",
+          "opponent": "KXNFLGAME-26JAN04NYJBUF-BUF"
+        },
+        "market_a_refers_to": "New York J",
+        "market_b_refers_to": "Buffalo"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-nyj-buf-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    },
+    {
+      "event_id": "kxnflgame_26jan04wasphi_was",
+      "description": "Washington at Philadelphia Winner?",
+      "sport": "NFL",
+      "event_date": "2026-01-05T20:00:00Z",
+      "teams": {
+        "team_a": "Washington",
+        "team_b": "Philadelphia",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN04WASPHI-WAS",
+          "opponent": "KXNFLGAME-26JAN04WASPHI-PHI"
+        },
+        "market_a_refers_to": "Washington",
+        "market_b_refers_to": "Philadelphia"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-was-phi-2026-01-04"
+        },
+        "_note": "Use slug for API calls"
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+# Secrets - NEVER commit these
+.env
+*.env
+google_credentials.json
+*_credentials.json
+*.pem
+*.key
+
+# Data files
+data/*.csv
+data/*.json
+data/*.db
+data/*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+debug.log
+
+# Database files (can be huge!)
+*.db
+*.sqlite
+*.sqlite3
+
+# All data folder contents
+data/
+**/data/*.db
+**/data/*.csv
+**/data/*.json
+**/data/*.log
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*~

@@ -1,0 +1,35 @@
+{
+  "_comment": "⚠️  IMPORTANT: This file contains API credentials. NEVER commit to git!",
+  "_comment2": "Make sure this file is listed in .gitignore",
+  
+  "kalshi": {
+    "enabled": true,
+    "api_key": "***REDACTED_KALSHI_API_KEY***",
+    "private_key_path": "../kalshi_private_key.pem",
+    "_note": "Credentials imported from your existing .env file"
+  },
+  
+  "polymarket": {
+    "enabled": true,
+    "_note": "Polymarket read-only API typically doesn't require credentials"
+  },
+  
+  "collection": {
+    "interval_seconds": 1,
+    "_note_interval": "AGGRESSIVE MODE: 1s = continuous collection with parallel fetching (3s cycles)",
+    "max_retries": 3,
+    "timeout_seconds": 10
+  },
+  
+  "database": {
+    "path": "data/market_data.db",
+    "_note": "SQLite database will be created here"
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "file": "logs/data_logger.log",
+    "_note": "Log file for debugging (not yet implemented)"
+  }
+}
+

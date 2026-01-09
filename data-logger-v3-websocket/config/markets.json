@@ -1,0 +1,337 @@
+{
+  "_comment": "Active markets for 2026-01-09",
+  "_generated_at": "2026-01-09T15:57:40.846113Z",
+  "_note": "Auto-discovered by market_discovery.py - 9 NBA, 1 CFP",
+  "markets": [
+    {
+      "event_id": "kxnbagame-26jan09millal",
+      "description": "Milwaukee at Los Angeles L",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.241696Z",
+      "teams": {
+        "team_a": "Milwaukee",
+        "team_b": "Los Angeles L"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09MILLAL-MIL",
+          "opponent": "KXNBAGAME-26JAN09MILLAL-LAL"
+        },
+        "market_a_refers_to": "Milwaukee",
+        "market_b_refers_to": "Los Angeles L"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-mil-lal-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "MIL": "103439010253511981704130916001443077128733492098522335417525077581724186460496",
+        "LAL": "105814450355638048111200786537485536417634050752691201195852976437898103450505"
+      },
+      "poly_condition_id": "0xf05b12027fc9a7874ad432b11d16f8176f5f7f0e202186e545c6c672c439a0f6",
+      "poly_title": "Bucks vs. Lakers",
+      "home_team": "LAL",
+      "away_team": "MIL"
+    },
+    {
+      "event_id": "kxnbagame-26jan09sacgsw",
+      "description": "Sacramento at Golden State",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.231003Z",
+      "teams": {
+        "team_a": "Sacramento",
+        "team_b": "Golden State"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09SACGSW-SAC",
+          "opponent": "KXNBAGAME-26JAN09SACGSW-GSW"
+        },
+        "market_a_refers_to": "Sacramento",
+        "market_b_refers_to": "Golden State"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-sac-gsw-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "SAC": "12387526872686002667756333614558472362326978460619878969426876099355073901008",
+        "GSW": "58638209983265647760377795349551223843631580325671773003666104810587904993919"
+      },
+      "poly_condition_id": "0xe8742f4eafe1abe2dce80f4c2620f7427727c21522a1ab13de9120ac2bcc12ed",
+      "poly_title": "Kings vs. Warriors",
+      "home_team": "GSW",
+      "away_team": "SAC"
+    },
+    {
+      "event_id": "kxnbagame-26jan09houpor",
+      "description": "Houston at Portland",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.265436Z",
+      "teams": {
+        "team_a": "Houston",
+        "team_b": "Portland"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09HOUPOR-HOU",
+          "opponent": "KXNBAGAME-26JAN09HOUPOR-POR"
+        },
+        "market_a_refers_to": "Houston",
+        "market_b_refers_to": "Portland"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-hou-por-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "HOU": "11044322011069405496481552041346880611463175311601935567806748052760845735406",
+        "POR": "37004809044649654823450322015776557200657864833469412578045345670950190693421"
+      },
+      "poly_condition_id": "0x85852214a6cba614a618a4717c528dc955263e38dd189d957ef810bccfe7f7ed",
+      "poly_title": "Rockets vs. Trail Blazers",
+      "home_team": "POR",
+      "away_team": "HOU"
+    },
+    {
+      "event_id": "kxnbagame-26jan09nykphx",
+      "description": "New York at Phoenix",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.280622Z",
+      "teams": {
+        "team_a": "New York",
+        "team_b": "Phoenix"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09NYKPHX-NYK",
+          "opponent": "KXNBAGAME-26JAN09NYKPHX-PHX"
+        },
+        "market_a_refers_to": "New York",
+        "market_b_refers_to": "Phoenix"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-nyk-phx-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "NYK": "4418096124343687525679255363245109125254423993780129232515795102677731835040",
+        "PHX": "5485099285487217139055384975885989408118131354850948136408743641387321671267"
+      },
+      "poly_condition_id": "0xb89f089946b18bca3a075b3812e8e270bc1b4115c00616166fc5ba69e4283a59",
+      "poly_title": "Knicks vs. Suns",
+      "home_team": "PHX",
+      "away_team": "NYK"
+    },
+    {
+      "event_id": "kxnbagame-26jan09atlden",
+      "description": "Atlanta at Denver",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.308812Z",
+      "teams": {
+        "team_a": "Atlanta",
+        "team_b": "Denver"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09ATLDEN-ATL",
+          "opponent": "KXNBAGAME-26JAN09ATLDEN-DEN"
+        },
+        "market_a_refers_to": "Atlanta",
+        "market_b_refers_to": "Denver"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-atl-den-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "ATL": "66451749030190016203154517296658639831480600099694317572921696703605797937879",
+        "DEN": "18173376152183029236941275043238378964782076380426372116174792811148284903009"
+      },
+      "poly_condition_id": "0x713d9ccfcad054baf93fdd6a7738a2ffc3f2a9f6d55202423eba2b89cbde80b9",
+      "poly_title": "Hawks vs. Nuggets",
+      "home_team": "DEN",
+      "away_team": "ATL"
+    },
+    {
+      "event_id": "kxnbagame-26jan09lacbkn",
+      "description": "Los Angeles C at Brooklyn",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.320469Z",
+      "teams": {
+        "team_a": "Los Angeles C",
+        "team_b": "Brooklyn"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09LACBKN-LAC",
+          "opponent": "KXNBAGAME-26JAN09LACBKN-BKN"
+        },
+        "market_a_refers_to": "Los Angeles C",
+        "market_b_refers_to": "Brooklyn"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-lac-bkn-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "LAC": "92243439640655703381923811132135820424501086009926838919910657627712806044183",
+        "BKN": "81039396921871273341672616254211835691150332375457153266535715381862600243459"
+      },
+      "poly_condition_id": "0x0722102b758fff894d63c9d44ed47f24c99ca0486d746c82a5d06659c2e7d116",
+      "poly_title": "Clippers vs. Nets",
+      "home_team": "BKN",
+      "away_team": "LAC"
+    },
+    {
+      "event_id": "kxnbagame-26jan09torbos",
+      "description": "Toronto at Boston",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.412056Z",
+      "teams": {
+        "team_a": "Toronto",
+        "team_b": "Boston"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09TORBOS-TOR",
+          "opponent": "KXNBAGAME-26JAN09TORBOS-BOS"
+        },
+        "market_a_refers_to": "Toronto",
+        "market_b_refers_to": "Boston"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-tor-bos-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "TOR": "88310593633426146534335127876812649205124782673659075443318598899024875884752",
+        "BOS": "92575240081535176183678078902513075255091181957078577354293899358566494375795"
+      },
+      "poly_condition_id": "0x67495a9c5471b3622d719ac9d09c38570ae2f834961cca550409bd1fc93d0ea8",
+      "poly_title": "Raptors vs. Celtics",
+      "home_team": "BOS",
+      "away_team": "TOR"
+    },
+    {
+      "event_id": "kxnbagame-26jan09phiorl",
+      "description": "Philadelphia at Orlando",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.349388Z",
+      "teams": {
+        "team_a": "Philadelphia",
+        "team_b": "Orlando"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09PHIORL-PHI",
+          "opponent": "KXNBAGAME-26JAN09PHIORL-ORL"
+        },
+        "market_a_refers_to": "Philadelphia",
+        "market_b_refers_to": "Orlando"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-phi-orl-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "PHI": "105072905742550708320917950055076780981337758389402937467269325547091949669553",
+        "ORL": "6139730444764082866998083573332700525842490325282034476383546989018079871078"
+      },
+      "poly_condition_id": "0xdd7f47e9b6facb2cdb8b5629ac56adaf7c9480ff448ed85268e242d77ad90421",
+      "poly_title": "76ers vs. Magic",
+      "home_team": "ORL",
+      "away_team": "PHI"
+    },
+    {
+      "event_id": "kxnbagame-26jan09nopwas",
+      "description": "New Orleans at Washington",
+      "sport": "NBA",
+      "event_date": "2026-01-03T15:06:04.328366Z",
+      "teams": {
+        "team_a": "New Orleans",
+        "team_b": "Washington"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09NOPWAS-NOP",
+          "opponent": "KXNBAGAME-26JAN09NOPWAS-WAS"
+        },
+        "market_a_refers_to": "New Orleans",
+        "market_b_refers_to": "Washington"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-nop-was-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "NOP": "49037188473121263826221552724106976084096569391012491652898209627005685704076",
+        "WAS": "81483867461872401863623181184177964220479373788640139657595800387050433454793"
+      },
+      "poly_condition_id": "0x53bde3e6f1c2ceb007c9be15c16fa6e62bb33cf9c505a86dd96a03174bf56325",
+      "poly_title": "Pelicans vs. Wizards",
+      "home_team": "WAS",
+      "away_team": "NOP"
+    },
+    {
+      "event_id": "kxncaafgame-26jan09oreind",
+      "description": "CFP: Oregon vs Indiana",
+      "sport": "CFP",
+      "event_date": "2026-01-05T01:14:02.801873Z",
+      "teams": {
+        "team_a": "Oregon",
+        "team_b": "Indiana"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNCAAFGAME-26JAN09OREIND-ORE",
+          "opponent": "KXNCAAFGAME-26JAN09OREIND-IND"
+        },
+        "market_a_refers_to": "Oregon",
+        "market_b_refers_to": "Indiana"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "cfp-ore-ind-2026-01-09"
+        }
+      },
+      "poly_token_ids": {
+        "ORE": "9582457452124876970491702012602654966458667596959660948687161390487436717790",
+        "IND": "16876502714779661815672749154759628865100317015605958130253912276725814629837"
+      },
+      "poly_condition_id": "0x99cc3bbbe311e157297c096850255c688c60c3b30eeeb9d673c67cfc0b49ed24",
+      "poly_title": "Oregon vs. Indiana",
+      "home_team": "IND",
+      "away_team": "ORE"
+    }
+  ]
+}

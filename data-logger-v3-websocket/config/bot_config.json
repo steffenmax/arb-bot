@@ -1,0 +1,37 @@
+{
+  "mode": "dutch_book",
+  "paper_trading": true,
+  "scan_interval_s": 1.0,
+  "stats_interval_s": 60,
+  "risk_limits": {
+    "max_trade_size_usd": 100,
+    "min_trade_size_usd": 50,
+    "max_total_exposure_usd": 500,
+    "max_event_exposure_usd": 200,
+    "max_unhedged_time_s": 30,
+    "min_edge_bps": 50,
+    "max_slippage_bps": 200,
+    "min_confidence": "Medium",
+    "min_fill_probability": 0.3,
+    "max_trades_per_hour": 20,
+    "max_consecutive_losses": 5,
+    "enabled": true,
+    "max_daily_loss_usd": 200
+  },
+  "arb_detector": {
+    "min_edge_bps": 50,
+    "max_slippage_bps": 200,
+    "max_staleness_ms": 2000,
+    "min_size_dollars": 50,
+    "max_size_dollars": 500,
+    "kalshi_fee_rate": 0.07,
+    "polymarket_fee_rate": 0.02
+  },
+  "dutch_book_executor": {
+    "execution_timeout_s": 3,
+    "max_price_slippage_bps": 100,
+    "kalshi_fee_rate": 0.07,
+    "polymarket_fee_rate": 0.02
+  },
+  "_note": "Dutch Book mode: buys complementary outcomes on both venues. Profit is guaranteed if combined ask < $1.00"
+}

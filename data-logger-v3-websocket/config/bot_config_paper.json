@@ -1,0 +1,20 @@
+{
+  "mode": "dutch_book",
+  "execution_enabled": false,
+  "paper_trading": true,
+  "scan_interval_s": 1.0,
+  "stats_interval_s": 30,
+  "risk_limits": {
+    "max_trade_size_usd": 100,
+    "max_total_exposure_usd": 500,
+    "min_edge_bps": 50,
+    "max_consecutive_losses": 5,
+    "max_daily_loss_usd": 200
+  },
+  "arb_detector": {
+    "min_edge_bps": 50,
+    "max_slippage_bps": 300,
+    "max_staleness_ms": 3000
+  },
+  "_note": "Dutch Book mode: buys complementary outcomes on both venues. Profit is guaranteed if combined ask < $1.00"
+}

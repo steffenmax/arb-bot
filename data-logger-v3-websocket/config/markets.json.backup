@@ -1,0 +1,403 @@
+{
+  "_comment": "Active markets for Jan 9 2026 - 10 NBA games + CFP Rose Bowl Semifinal",
+  "_generated_at": "2026-01-09T00:00:00Z",
+  "_note": "NBA games + CFP Rose Bowl Semifinal. Run resolve_polymarket_tokens.py to get real token IDs.",
+  "markets": [
+    {
+      "event_id": "kxncaafgame_26jan09osund",
+      "description": "CFP Rose Bowl Semifinal: Ohio State vs Notre Dame",
+      "sport": "CFP",
+      "event_date": "2026-01-09T21:00:00Z",
+      "teams": {
+        "team_a": "Ohio State",
+        "team_b": "Notre Dame",
+        "note": "CFP Semifinal - Rose Bowl"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNCAAFGAME-26JAN09OSUND-OSU",
+          "opponent": "KXNCAAFGAME-26JAN09OSUND-ND"
+        },
+        "market_a_refers_to": "Ohio State",
+        "market_b_refers_to": "Notre Dame"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "cfb-osu-nd-2026-01-09"
+        },
+        "_note": "CFP Rose Bowl Semifinal"
+      },
+      "poly_token_ids": {
+        "OSU": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "ND": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "Ohio State vs. Notre Dame",
+      "home_team": "ND",
+      "away_team": "OSU",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09bosphi",
+      "description": "Boston at Philadelphia Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T00:00:00Z",
+      "teams": {
+        "team_a": "Boston",
+        "team_b": "Philadelphia",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09BOSPHI-BOS",
+          "opponent": "KXNBAGAME-26JAN09BOSPHI-PHI"
+        },
+        "market_a_refers_to": "Boston",
+        "market_b_refers_to": "Philadelphia"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-bos-phi-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "BOS": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "PHI": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "PHI",
+      "away_team": "BOS",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09nykdet",
+      "description": "New York at Detroit Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T00:00:00Z",
+      "teams": {
+        "team_a": "New York",
+        "team_b": "Detroit",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09NYKDET-NYK",
+          "opponent": "KXNBAGAME-26JAN09NYKDET-DET"
+        },
+        "market_a_refers_to": "New York",
+        "market_b_refers_to": "Detroit"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-nyk-det-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "NYK": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "DET": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "DET",
+      "away_team": "NYK",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09atlwas",
+      "description": "Atlanta at Washington Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T00:00:00Z",
+      "teams": {
+        "team_a": "Atlanta",
+        "team_b": "Washington",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09ATLWAS-ATL",
+          "opponent": "KXNBAGAME-26JAN09ATLWAS-WAS"
+        },
+        "market_a_refers_to": "Atlanta",
+        "market_b_refers_to": "Washington"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-atl-was-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "ATL": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "WAS": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "WAS",
+      "away_team": "ATL",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09houorl",
+      "description": "Houston at Orlando Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T00:00:00Z",
+      "teams": {
+        "team_a": "Houston",
+        "team_b": "Orlando",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09HOUORL-HOU",
+          "opponent": "KXNBAGAME-26JAN09HOUORL-ORL"
+        },
+        "market_a_refers_to": "Houston",
+        "market_b_refers_to": "Orlando"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-hou-orl-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "HOU": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "ORL": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "ORL",
+      "away_team": "HOU",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09memmem",
+      "description": "Memphis at Toronto Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T00:30:00Z",
+      "teams": {
+        "team_a": "Memphis",
+        "team_b": "Toronto",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09MEMTOR-MEM",
+          "opponent": "KXNBAGAME-26JAN09MEMTOR-TOR"
+        },
+        "market_a_refers_to": "Memphis",
+        "market_b_refers_to": "Toronto"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-mem-tor-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "MEM": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "TOR": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "TOR",
+      "away_team": "MEM",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09oklmil",
+      "description": "Oklahoma City at Milwaukee Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T01:00:00Z",
+      "teams": {
+        "team_a": "Oklahoma City",
+        "team_b": "Milwaukee",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09OKCMIL-OKC",
+          "opponent": "KXNBAGAME-26JAN09OKCMIL-MIL"
+        },
+        "market_a_refers_to": "Oklahoma City",
+        "market_b_refers_to": "Milwaukee"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-okc-mil-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "OKC": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "MIL": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "MIL",
+      "away_team": "OKC",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09brknop",
+      "description": "Brooklyn at New Orleans Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T01:00:00Z",
+      "teams": {
+        "team_a": "Brooklyn",
+        "team_b": "New Orleans",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09BRKNOP-BRK",
+          "opponent": "KXNBAGAME-26JAN09BRKNOP-NOP"
+        },
+        "market_a_refers_to": "Brooklyn",
+        "market_b_refers_to": "New Orleans"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-brk-nop-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "BRK": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "NOP": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "NOP",
+      "away_team": "BRK",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09sasden",
+      "description": "San Antonio at Denver Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T02:00:00Z",
+      "teams": {
+        "team_a": "San Antonio",
+        "team_b": "Denver",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09SASDEN-SAS",
+          "opponent": "KXNBAGAME-26JAN09SASDEN-DEN"
+        },
+        "market_a_refers_to": "San Antonio",
+        "market_b_refers_to": "Denver"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-sas-den-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "SAS": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "DEN": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "DEN",
+      "away_team": "SAS",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09phxpor",
+      "description": "Phoenix at Portland Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T03:00:00Z",
+      "teams": {
+        "team_a": "Phoenix",
+        "team_b": "Portland",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09PHXPOR-PHX",
+          "opponent": "KXNBAGAME-26JAN09PHXPOR-POR"
+        },
+        "market_a_refers_to": "Phoenix",
+        "market_b_refers_to": "Portland"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-phx-por-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "PHX": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "POR": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "POR",
+      "away_team": "PHX",
+      "poly_event_id": ""
+    },
+    {
+      "event_id": "kxnbagame_26jan09laclal",
+      "description": "LA Clippers at LA Lakers Winner?",
+      "sport": "NBA",
+      "event_date": "2026-01-10T03:30:00Z",
+      "teams": {
+        "team_a": "Los Angeles C",
+        "team_b": "Los Angeles",
+        "note": "Kalshi has two markets - one per team"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN09LACLAL-LAC",
+          "opponent": "KXNBAGAME-26JAN09LACLAL-LAL"
+        },
+        "market_a_refers_to": "Los Angeles C",
+        "market_b_refers_to": "Los Angeles"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-lac-lal-2026-01-09"
+        },
+        "_note": "Use slug for API calls"
+      },
+      "poly_token_ids": {
+        "LAC": "PLACEHOLDER_RUN_RESOLVE_SCRIPT",
+        "LAL": "PLACEHOLDER_RUN_RESOLVE_SCRIPT"
+      },
+      "poly_condition_id": "",
+      "poly_title": "",
+      "home_team": "LAL",
+      "away_team": "LAC",
+      "poly_event_id": ""
+    }
+  ]
+}

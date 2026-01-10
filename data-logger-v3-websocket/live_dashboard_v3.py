@@ -186,23 +186,25 @@ class LiveDashboard:
             nickname = team_info['nickname']
             aliases = team_info.get('aliases', [])
             
-            # Find Kalshi orderbook for this team
+            # Find Kalshi orderbook for this team (case-insensitive matching)
             kalshi_data = {}
             for key, data in orderbooks.items():
                 if key.startswith(f"{event_id}:kalshi:"):
-                    k_team = data.get('team', '')
-                    if (k_team == team_code or k_team == city or 
-                        k_team == nickname or k_team in aliases):
+                    k_team = data.get('team', '').lower()
+                    aliases_lower = [a.lower() for a in aliases]
+                    if (k_team == team_code.lower() or k_team == city.lower() or 
+                        k_team == nickname.lower() or k_team in aliases_lower):
                         kalshi_data = data
                         break
             
-            # Find Polymarket orderbook for this team
+            # Find Polymarket orderbook for this team (case-insensitive matching)
             poly_data = {}
             for key, data in orderbooks.items():
                 if key.startswith(f"{event_id}:polymarket:"):
-                    p_team = data.get('team', '')
-                    if (p_team == team_code or p_team == nickname or 
-                        p_team == city or p_team in aliases):
+                    p_team = data.get('team', '').lower()
+                    aliases_lower = [a.lower() for a in aliases]
+                    if (p_team == team_code.lower() or p_team == nickname.lower() or 
+                        p_team == city.lower() or p_team in aliases_lower):
                         poly_data = data
                         break
             

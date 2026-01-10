@@ -1312,11 +1312,12 @@ class ArbBot:
                     writer.writerow([
                         'timestamp', 'event_id', 'strategy', 'edge_bps', 
                         'size_usd', 'simulated_pnl', 'confidence',
-                        'kalshi_team', 'kalshi_price', 'poly_team', 'poly_price',
+                        'kalshi_team', 'kalshi_price', 'kalshi_depth',
+                        'poly_team', 'poly_price', 'poly_depth',
                         'combined_cost', 'guaranteed_payout'
                     ])
             
-            # Append trade
+            # Append trade with depth/volume info
             with open(log_file, 'a', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow([
@@ -1329,8 +1330,10 @@ class ArbBot:
                     opportunity.confidence,
                     opportunity.kalshi_team,
                     f"{opportunity.kalshi_vwap:.4f}",
+                    f"{opportunity.kalshi_ask_size:.0f}",  # Contracts available at Kalshi
                     opportunity.poly_team,
                     f"{opportunity.poly_vwap:.4f}",
+                    f"{opportunity.poly_ask_size:.0f}",  # Contracts available at Poly
                     f"{opportunity.combined_cost:.4f}",
                     f"{opportunity.guaranteed_payout:.2f}"
                 ])

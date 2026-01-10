@@ -157,6 +157,78 @@ CANONICAL_TO_CODE = {
 
 
 # =============================================================================
+# NFL TEAM ALIASES - All 32 Teams
+# =============================================================================
+
+NFL_TEAM_ALIASES = {
+    # AFC East
+    "bills": ["buffalo", "buf", "buffalo bills", "bills"],
+    "dolphins": ["miami dolphins", "mia", "miami", "dolphins"],
+    "patriots": ["new england", "ne", "new england patriots", "patriots", "pats"],
+    "jets": ["new york jets", "nyj", "jets", "new york j"],
+    
+    # AFC North
+    "ravens": ["baltimore", "bal", "baltimore ravens", "ravens"],
+    "bengals": ["cincinnati", "cin", "cincinnati bengals", "bengals"],
+    "browns": ["cleveland", "cle", "cleveland browns", "browns"],
+    "steelers": ["pittsburgh", "pit", "pittsburgh steelers", "steelers"],
+    
+    # AFC South
+    "texans": ["houston", "hou", "houston texans", "texans"],
+    "colts": ["indianapolis", "ind", "indianapolis colts", "colts"],
+    "jaguars": ["jacksonville", "jax", "jacksonville jaguars", "jaguars"],
+    "titans": ["tennessee", "ten", "tennessee titans", "titans"],
+    
+    # AFC West
+    "broncos": ["denver", "den", "denver broncos", "broncos"],
+    "chiefs": ["kansas city", "kc", "kansas city chiefs", "chiefs"],
+    "raiders": ["las vegas", "lv", "las vegas raiders", "raiders"],
+    "chargers": ["los angeles chargers", "lac", "chargers", "la chargers"],
+    
+    # NFC East
+    "cowboys": ["dallas", "dal", "dallas cowboys", "cowboys"],
+    "giants": ["new york giants", "nyg", "giants", "new york g"],
+    "eagles": ["philadelphia", "phi", "philadelphia eagles", "eagles"],
+    "commanders": ["washington", "was", "washington commanders", "commanders"],
+    
+    # NFC North
+    "bears": ["chicago", "chi", "chicago bears", "bears"],
+    "lions": ["detroit", "det", "detroit lions", "lions"],
+    "packers": ["green bay", "gb", "green bay packers", "packers"],
+    "vikings": ["minnesota", "min", "minnesota vikings", "vikings"],
+    
+    # NFC South
+    "falcons": ["atlanta", "atl", "atlanta falcons", "falcons"],
+    "panthers": ["carolina", "car", "carolina panthers", "panthers"],
+    "saints": ["new orleans", "no", "new orleans saints", "saints"],
+    "buccaneers": ["tampa bay", "tb", "tampa bay buccaneers", "buccaneers", "bucs"],
+    
+    # NFC West
+    "cardinals": ["arizona", "ari", "arizona cardinals", "cardinals"],
+    "rams": ["los angeles rams", "lar", "rams", "la rams"],
+    "49ers": ["san francisco", "sf", "san francisco 49ers", "49ers"],
+    "seahawks": ["seattle", "sea", "seattle seahawks", "seahawks"],
+}
+
+# NFL alias -> canonical
+NFL_ALIAS_TO_CANONICAL = {}
+for canonical, aliases in NFL_TEAM_ALIASES.items():
+    for alias in aliases:
+        NFL_ALIAS_TO_CANONICAL[alias.lower()] = canonical
+
+# NFL canonical -> code
+NFL_CANONICAL_TO_CODE = {
+    "bills": "BUF", "dolphins": "MIA", "patriots": "NE", "jets": "NYJ",
+    "ravens": "BAL", "bengals": "CIN", "browns": "CLE", "steelers": "PIT",
+    "texans": "HOU", "colts": "IND", "jaguars": "JAX", "titans": "TEN",
+    "broncos": "DEN", "chiefs": "KC", "raiders": "LV", "chargers": "LAC",
+    "cowboys": "DAL", "giants": "NYG", "eagles": "PHI", "commanders": "WAS",
+    "bears": "CHI", "lions": "DET", "packers": "GB", "vikings": "MIN",
+    "falcons": "ATL", "panthers": "CAR", "saints": "NO", "buccaneers": "TB",
+    "cardinals": "ARI", "rams": "LAR", "49ers": "SF", "seahawks": "SEA",
+}
+
+# =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
 
@@ -791,6 +863,8 @@ Examples:
     # Route based on sport
     if args.sport.lower() == "nba":
         discover_nba(target_date, args)
+    elif args.sport.lower() == "nfl":
+        discover_nfl(target_date, args)
     elif args.sport.lower() == "cfp":
         discover_cfp(target_date, args)
     elif args.sport.lower() == "all":
@@ -1171,6 +1245,374 @@ def build_cfp_markets_json(matched: List[Dict], target_date: str) -> Dict:
     }
 
 
+# =============================================================================
+# NFL QUERY FUNCTIONS
+# =============================================================================
+
+def normalize_nfl_team_name(name: str) -> str:
+    """Convert any NFL team name variant to canonical name"""
+    if not name:
+        return None
+    
+    name_lower = name.lower().strip()
+    
+    # Direct lookup
+    if name_lower in NFL_ALIAS_TO_CANONICAL:
+        return NFL_ALIAS_TO_CANONICAL[name_lower]
+    
+    # Try partial matching
+    for alias, canonical in NFL_ALIAS_TO_CANONICAL.items():
+        if alias in name_lower or name_lower in alias:
+            return canonical
+    
+    return None
+
+
+def get_nfl_team_code(canonical_name: str) -> str:
+    """Get code from canonical NFL team name"""
+    return NFL_CANONICAL_TO_CODE.get(canonical_name, canonical_name.upper()[:3])
+
+
+def query_kalshi_nfl(target_date: str, verbose: bool = False) -> List[Dict]:
+    """Query Kalshi API for NFL games on target date"""
+    url = "https://api.elections.kalshi.com/trade-api/v2/events"
+    params = {
+        'series_ticker': 'KXNFLGAME',
+        'status': 'open',
+        'limit': 50
+    }
+    
+    try:
+        if verbose:
+            print(f"  Querying Kalshi: {url}")
+        
+        response = requests.get(url, params=params, headers={'accept': 'application/json'}, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+        
+        events = data.get('events', [])
+        if verbose:
+            print(f"  Found {len(events)} total NFL events on Kalshi")
+        
+        results = []
+        for event in events:
+            event_ticker = event.get('event_ticker', '')
+            title = event.get('title', '')
+            
+            # Parse date from ticker
+            event_date = parse_kalshi_date(event_ticker)
+            if not event_date:
+                continue
+            
+            # Filter by target date
+            if event_date != target_date:
+                continue
+            
+            # Parse teams from title (e.g., "Baltimore at Pittsburgh")
+            title_match = re.match(r'(.+?)\s+at\s+(.+)', title, re.IGNORECASE)
+            if not title_match:
+                title_match = re.match(r'(.+?)\s+vs\.?\s+(.+)', title, re.IGNORECASE)
+            
+            if not title_match:
+                if verbose:
+                    print(f"    Could not parse title: {title}")
+                continue
+            
+            team_a_raw = title_match.group(1).strip()
+            team_b_raw = title_match.group(2).strip()
+            
+            team_a = normalize_nfl_team_name(team_a_raw)
+            team_b = normalize_nfl_team_name(team_b_raw)
+            
+            if not team_a or not team_b:
+                if verbose:
+                    print(f"    Could not normalize NFL teams: {team_a_raw} vs {team_b_raw}")
+                continue
+            
+            team_a_code = get_nfl_team_code(team_a)
+            team_b_code = get_nfl_team_code(team_b)
+            
+            # Build market tickers
+            market_a_ticker = f"{event_ticker}-{team_a_code}"
+            market_b_ticker = f"{event_ticker}-{team_b_code}"
+            
+            results.append({
+                'event_ticker': event_ticker,
+                'title': title,
+                'date': event_date,
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_raw': team_a_raw,
+                'team_b_raw': team_b_raw,
+                'team_a_code': team_a_code,
+                'team_b_code': team_b_code,
+                'market_a_ticker': market_a_ticker,
+                'market_b_ticker': market_b_ticker,
+            })
+        
+        if verbose:
+            print(f"  {len(results)} games match date {target_date}")
+        
+        return results
+    
+    except requests.exceptions.Timeout:
+        print("  ✗ Kalshi API timeout")
+        return []
+    except requests.exceptions.RequestException as e:
+        print(f"  ✗ Kalshi API error: {e}")
+        return []
+
+
+def query_polymarket_nfl(target_date: str, verbose: bool = False) -> List[Dict]:
+    """Query Polymarket API for NFL games on target date"""
+    url = "https://gamma-api.polymarket.com/events"
+    params = {
+        'series_id': '10280',  # NFL series ID
+        'closed': 'false',
+        'limit': 50
+    }
+    
+    try:
+        if verbose:
+            print(f"  Querying Polymarket: {url}")
+        
+        response = requests.get(url, params=params, timeout=15)
+        response.raise_for_status()
+        events = response.json()
+        
+        if verbose:
+            print(f"  Found {len(events)} total NFL events on Polymarket")
+        
+        results = []
+        for event in events:
+            title = event.get('title', '')
+            start_date = event.get('startDate', '')
+            end_date = event.get('endDate', '')
+            
+            # For NFL, use endDate - 1 day as the game date
+            event_date = parse_poly_date(end_date)
+            if event_date:
+                end_dt = datetime.strptime(event_date, "%Y-%m-%d")
+                game_dt = end_dt - timedelta(days=1)
+                event_date = game_dt.strftime("%Y-%m-%d")
+            
+            if verbose:
+                print(f"    NFL event: {title}, endDate={end_date[:10] if end_date else 'N/A'}, game_date={event_date}")
+            
+            if not event_date:
+                continue
+            
+            # Filter by target date
+            if event_date != target_date:
+                continue
+            
+            # Find moneyline market
+            markets = event.get('markets', [])
+            moneyline_market = None
+            
+            for market in markets:
+                # Check if it's a moneyline market (2 team outcomes)
+                question = market.get('question', '').strip()
+                outcomes_raw = market.get('outcomes', [])
+                
+                if isinstance(outcomes_raw, str):
+                    outcomes = json.loads(outcomes_raw)
+                else:
+                    outcomes = outcomes_raw
+                
+                if len(outcomes) != 2:
+                    continue
+                
+                # Filter out Over/Under/Yes/No
+                outcome_str = ' '.join(outcomes).lower()
+                if any(word in outcome_str for word in ['over', 'under', 'yes', 'no']):
+                    continue
+                
+                # Both outcomes should be recognizable team names
+                t_a = normalize_nfl_team_name(outcomes[0])
+                t_b = normalize_nfl_team_name(outcomes[1])
+                
+                if t_a and t_b:
+                    moneyline_market = market
+                    break
+            
+            if not moneyline_market:
+                if verbose:
+                    print(f"    No moneyline market found for: {title}")
+                continue
+            
+            # Extract outcomes and token IDs
+            outcomes_raw = moneyline_market.get('outcomes', [])
+            tokens_raw = moneyline_market.get('clobTokenIds', [])
+            condition_id = moneyline_market.get('conditionId', '')
+            
+            if isinstance(outcomes_raw, str):
+                outcomes = json.loads(outcomes_raw)
+            else:
+                outcomes = outcomes_raw
+            
+            if isinstance(tokens_raw, str):
+                tokens = json.loads(tokens_raw)
+            else:
+                tokens = tokens_raw
+            
+            if len(outcomes) != 2 or len(tokens) != 2:
+                continue
+            
+            # Normalize team names
+            team_a = normalize_nfl_team_name(outcomes[0])
+            team_b = normalize_nfl_team_name(outcomes[1])
+            
+            if not team_a or not team_b:
+                if verbose:
+                    print(f"    Could not normalize NFL teams: {outcomes}")
+                continue
+            
+            team_a_code = get_nfl_team_code(team_a)
+            team_b_code = get_nfl_team_code(team_b)
+            
+            results.append({
+                'title': title,
+                'date': event_date,
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_outcome': outcomes[0],
+                'team_b_outcome': outcomes[1],
+                'team_a_code': team_a_code,
+                'team_b_code': team_b_code,
+                'condition_id': condition_id,
+                'token_ids': {team_a_code: tokens[0], team_b_code: tokens[1]},
+                'start_date': start_date,
+            })
+        
+        if verbose:
+            print(f"  {len(results)} games match date {target_date}")
+        
+        return results
+    
+    except requests.exceptions.Timeout:
+        print("  ✗ Polymarket API timeout")
+        return []
+    except requests.exceptions.RequestException as e:
+        print(f"  ✗ Polymarket API error: {e}")
+        return []
+
+
+def build_nfl_markets_json(matched: List[Dict], target_date: str) -> Dict:
+    """Build markets.json structure from matched NFL games"""
+    markets = []
+    
+    for m in matched:
+        k = m['kalshi']
+        p = m['polymarket']
+        
+        # Build event_id from Kalshi ticker (lowercase)
+        event_id = k['event_ticker'].lower()
+        
+        # Description
+        description = f"NFL: {k['team_a_raw']} at {k['team_b_raw']}"
+        
+        market_entry = {
+            "event_id": event_id,
+            "description": description,
+            "sport": "NFL",
+            "event_date": p['start_date'],
+            "teams": {
+                "team_a": k['team_a_raw'],
+                "team_b": k['team_b_raw']
+            },
+            "kalshi": {
+                "enabled": True,
+                "markets": {
+                    "main": k['market_a_ticker'],
+                    "opponent": k['market_b_ticker']
+                },
+                "market_a_refers_to": k['team_a_raw'],
+                "market_b_refers_to": k['team_b_raw']
+            },
+            "polymarket": {
+                "enabled": True,
+                "markets": {
+                    "slug": f"nfl-{k['team_a_code'].lower()}-{k['team_b_code'].lower()}-{target_date}"
+                }
+            },
+            "poly_token_ids": p['token_ids'],
+            "poly_condition_id": p['condition_id'],
+            "poly_title": p['title'],
+            "home_team": k['team_b_code'],
+            "away_team": k['team_a_code']
+        }
+        
+        markets.append(market_entry)
+    
+    return {
+        "_comment": f"Active NFL markets for {target_date}",
+        "_generated_at": datetime.now(timezone.utc).isoformat(),
+        "_note": f"Auto-discovered by market_discovery.py",
+        "markets": markets
+    }
+
+
+def discover_nfl(target_date: str, args):
+    """Discover NFL games"""
+    
+    # Step 1: Query Kalshi
+    print()
+    print("Step 1: Querying Kalshi NFL...")
+    kalshi_games = query_kalshi_nfl(target_date, verbose=args.verbose)
+    print(f"  Found {len(kalshi_games)} Kalshi NFL games for {target_date}")
+    
+    # Step 2: Query Polymarket
+    print()
+    print("Step 2: Querying Polymarket NFL...")
+    poly_games = query_polymarket_nfl(target_date, verbose=args.verbose)
+    print(f"  Found {len(poly_games)} Polymarket NFL games for {target_date}")
+    
+    # Step 3: Match games
+    print()
+    print("Step 3: Matching games...")
+    matched, kalshi_only, poly_only = match_games(kalshi_games, poly_games, verbose=args.verbose)
+    print(f"  Matched: {len(matched)}")
+    print(f"  Kalshi only: {len(kalshi_only)}")
+    print(f"  Polymarket only: {len(poly_only)}")
+    
+    # Step 4: Print results
+    print_results(matched, kalshi_only, poly_only, target_date)
+    
+    # Step 5: Write to markets.json
+    if len(matched) == 0:
+        print("No matched games to write.")
+        sys.exit(0)
+    
+    config = build_nfl_markets_json(matched, target_date)
+    
+    if args.dry_run:
+        print()
+        print("DRY RUN - Would write:")
+        print("-" * 60)
+        print(json.dumps(config, indent=2))
+        print("-" * 60)
+        print("(No changes made)")
+    else:
+        # Prompt for confirmation unless --yes flag
+        if not args.yes:
+            print()
+            response = input(f"Write {len(matched)} markets to markets.json? [y/n]: ").strip().lower()
+            if response != 'y':
+                print("Aborted.")
+                sys.exit(0)
+        
+        print()
+        print("Step 5: Writing markets.json...")
+        success = write_markets_json(config, append=args.append)
+        
+        if success:
+            print()
+            print("✓ Done! Restart the bot to use new markets.")
+        else:
+            sys.exit(1)
+
+
 def discover_cfp(target_date: str, args):
     """Discover CFP games"""
     
@@ -1232,7 +1674,7 @@ def discover_cfp(target_date: str, args):
 
 
 def discover_all(target_date: str, args):
-    """Discover both NBA and CFP games"""
+    """Discover NBA, NFL, and CFP games"""
     all_matched = []
     
     # Query NBA
@@ -1255,6 +1697,27 @@ def discover_all(target_date: str, args):
     print("Matching NBA games...")
     matched_nba, kalshi_only_nba, poly_only_nba = match_games(kalshi_nba, poly_nba, verbose=args.verbose)
     print(f"  Matched: {len(matched_nba)}")
+    
+    # Query NFL
+    print()
+    print("=" * 60)
+    print("DISCOVERING NFL GAMES")
+    print("=" * 60)
+    
+    print()
+    print("Querying Kalshi NFL...")
+    kalshi_nfl = query_kalshi_nfl(target_date, verbose=args.verbose)
+    print(f"  Found {len(kalshi_nfl)} Kalshi NFL games")
+    
+    print()
+    print("Querying Polymarket NFL...")
+    poly_nfl = query_polymarket_nfl(target_date, verbose=args.verbose)
+    print(f"  Found {len(poly_nfl)} Polymarket NFL games")
+    
+    print()
+    print("Matching NFL games...")
+    matched_nfl, kalshi_only_nfl, poly_only_nfl = match_games(kalshi_nfl, poly_nfl, verbose=args.verbose)
+    print(f"  Matched: {len(matched_nfl)}")
     
     # Query CFP
     print()
@@ -1284,12 +1747,18 @@ def discover_all(target_date: str, args):
     print("=" * 100)
     
     print()
-    print(f"✓ MATCHED GAMES ({len(matched_nba) + len(matched_cfp)} total):")
+    print(f"✓ MATCHED GAMES ({len(matched_nba) + len(matched_nfl) + len(matched_cfp)} total):")
     print("-" * 100)
     
     if matched_nba:
         print(f"\n  NBA ({len(matched_nba)}):")
         for m in matched_nba:
+            k = m['kalshi']
+            print(f"    {k['team_a_code']} @ {k['team_b_code']} ({k['event_ticker']})")
+    
+    if matched_nfl:
+        print(f"\n  NFL ({len(matched_nfl)}):")
+        for m in matched_nfl:
             k = m['kalshi']
             print(f"    {k['team_a_code']} @ {k['team_b_code']} ({k['event_ticker']})")
     
@@ -1299,12 +1768,12 @@ def discover_all(target_date: str, args):
             k = m['kalshi']
             print(f"    {k['team_a_code']} vs {k['team_b_code']} ({k['event_ticker']})")
     
-    if not matched_nba and not matched_cfp:
+    if not matched_nba and not matched_nfl and not matched_cfp:
         print("  No matched games found.")
     
     # Unmatched summary
-    all_kalshi_only = kalshi_only_nba + kalshi_only_cfp
-    all_poly_only = poly_only_nba + poly_only_cfp
+    all_kalshi_only = kalshi_only_nba + kalshi_only_nfl + kalshi_only_cfp
+    all_poly_only = poly_only_nba + poly_only_nfl + poly_only_cfp
     
     if all_kalshi_only:
         print(f"\n✗ KALSHI ONLY ({len(all_kalshi_only)}):")
@@ -1324,7 +1793,7 @@ def discover_all(target_date: str, args):
     print("=" * 100)
     
     # Build combined markets.json
-    total_matched = len(matched_nba) + len(matched_cfp)
+    total_matched = len(matched_nba) + len(matched_nfl) + len(matched_cfp)
     if total_matched == 0:
         print("No matched games to write.")
         sys.exit(0)
@@ -1337,6 +1806,11 @@ def discover_all(target_date: str, args):
         nba_config = build_markets_json(matched_nba, target_date, "NBA")
         markets.extend(nba_config['markets'])
     
+    # Add NFL markets
+    if matched_nfl:
+        nfl_config = build_nfl_markets_json(matched_nfl, target_date)
+        markets.extend(nfl_config['markets'])
+    
     # Add CFP markets
     if matched_cfp:
         cfp_config = build_cfp_markets_json(matched_cfp, target_date)
@@ -1344,8 +1818,8 @@ def discover_all(target_date: str, args):
     
     config = {
         "_comment": f"Active markets for {target_date}",
-        "_generated_at": datetime.now().isoformat() + "Z",
-        "_note": f"Auto-discovered by market_discovery.py - {len(matched_nba)} NBA, {len(matched_cfp)} CFP",
+        "_generated_at": datetime.now(timezone.utc).isoformat(),
+        "_note": f"Auto-discovered by market_discovery.py - {len(matched_nba)} NBA, {len(matched_nfl)} NFL, {len(matched_cfp)} CFP",
         "markets": markets
     }
     

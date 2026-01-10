@@ -1365,137 +1365,183 @@ def query_kalshi_nfl(target_date: str, verbose: bool = False) -> List[Dict]:
 
 def query_polymarket_nfl(target_date: str, verbose: bool = False) -> List[Dict]:
     """Query Polymarket API for NFL games on target date"""
-    url = "https://gamma-api.polymarket.com/events"
-    params = {
-        'series_id': '10280',  # NFL series ID
-        'closed': 'false',
-        'limit': 50
-    }
     
-    try:
-        if verbose:
-            print(f"  Querying Polymarket: {url}")
-        
-        response = requests.get(url, params=params, timeout=15)
-        response.raise_for_status()
-        events = response.json()
-        
-        if verbose:
-            print(f"  Found {len(events)} total NFL events on Polymarket")
-        
-        results = []
-        for event in events:
-            title = event.get('title', '')
-            start_date = event.get('startDate', '')
-            end_date = event.get('endDate', '')
+    # Try multiple potential NFL series IDs
+    potential_series_ids = ['10280', '10201', '10200', None]  # None = search all
+    
+    all_nfl_events = []
+    
+    for series_id in potential_series_ids:
+        try:
+            url = "https://gamma-api.polymarket.com/events"
+            params = {
+                'closed': 'false',
+                'limit': 200
+            }
+            if series_id:
+                params['series_id'] = series_id
             
-            # For NFL, use endDate - 1 day as the game date
-            event_date = parse_poly_date(end_date)
-            if event_date:
-                end_dt = datetime.strptime(event_date, "%Y-%m-%d")
-                game_dt = end_dt - timedelta(days=1)
-                event_date = game_dt.strftime("%Y-%m-%d")
+            if verbose and series_id:
+                print(f"  Trying Polymarket series_id={series_id}...")
+            elif verbose:
+                print(f"  Querying all Polymarket events...")
             
+            response = requests.get(url, params=params, timeout=15)
+            response.raise_for_status()
+            events = response.json()
+            
+            # Filter for NFL events by title keywords
+            for event in events:
+                title = event.get('title', '').lower()
+                # NFL games typically have team names or "nfl" in title
+                if any(keyword in title for keyword in ['vs', 'vs.', '@']):
+                    # Check if title contains NFL team names
+                    words = title.split()
+                    has_nfl_team = False
+                    for word in words:
+                        if normalize_nfl_team_name(word):
+                            has_nfl_team = True
+                            break
+                    
+                    if has_nfl_team:
+                        all_nfl_events.append(event)
+            
+            if all_nfl_events and verbose:
+                print(f"  Found {len(all_nfl_events)} potential NFL events")
+                break
+                
+        except Exception as e:
             if verbose:
-                print(f"    NFL event: {title}, endDate={end_date[:10] if end_date else 'N/A'}, game_date={event_date}")
-            
-            if not event_date:
-                continue
-            
-            # Filter by target date
-            if event_date != target_date:
-                continue
-            
-            # Find moneyline market
-            markets = event.get('markets', [])
-            moneyline_market = None
-            
-            for market in markets:
-                # Check if it's a moneyline market (2 team outcomes)
-                question = market.get('question', '').strip()
-                outcomes_raw = market.get('outcomes', [])
-                
-                if isinstance(outcomes_raw, str):
-                    outcomes = json.loads(outcomes_raw)
-                else:
-                    outcomes = outcomes_raw
-                
-                if len(outcomes) != 2:
-                    continue
-                
-                # Filter out Over/Under/Yes/No
-                outcome_str = ' '.join(outcomes).lower()
-                if any(word in outcome_str for word in ['over', 'under', 'yes', 'no']):
-                    continue
-                
-                # Both outcomes should be recognizable team names
-                t_a = normalize_nfl_team_name(outcomes[0])
-                t_b = normalize_nfl_team_name(outcomes[1])
-                
-                if t_a and t_b:
-                    moneyline_market = market
-                    break
-            
-            if not moneyline_market:
-                if verbose:
-                    print(f"    No moneyline market found for: {title}")
-                continue
-            
-            # Extract outcomes and token IDs
-            outcomes_raw = moneyline_market.get('outcomes', [])
-            tokens_raw = moneyline_market.get('clobTokenIds', [])
-            condition_id = moneyline_market.get('conditionId', '')
+                print(f"  Error with series_id={series_id}: {e}")
+            continue
+    
+    if verbose:
+        print(f"  Found {len(all_nfl_events)} total NFL events on Polymarket")
+    
+    results = []
+    for event in all_nfl_events:
+        title = event.get('title', '')
+        start_date = event.get('startDate', '')
+        end_date = event.get('endDate', '')
+        
+        # For NFL, use endDate - 1 day as the game date
+        event_date = parse_poly_date(end_date)
+        if event_date:
+            end_dt = datetime.strptime(event_date, "%Y-%m-%d")
+            game_dt = end_dt - timedelta(days=1)
+            event_date = game_dt.strftime("%Y-%m-%d")
+        
+        if verbose:
+            print(f"    NFL event: {title}, endDate={end_date[:10] if end_date else 'N/A'}, game_date={event_date}")
+        
+        if not event_date:
+            continue
+        
+        # Filter by target date
+        if event_date != target_date:
+            continue
+        
+        # Find moneyline market - be more lenient for NFL
+        markets = event.get('markets', [])
+        moneyline_market = None
+        
+        for market in markets:
+            question = market.get('question', '').strip()
+            outcomes_raw = market.get('outcomes', [])
             
             if isinstance(outcomes_raw, str):
-                outcomes = json.loads(outcomes_raw)
+                try:
+                    outcomes = json.loads(outcomes_raw)
+                except:
+                    continue
             else:
                 outcomes = outcomes_raw
             
-            if isinstance(tokens_raw, str):
-                tokens = json.loads(tokens_raw)
-            else:
-                tokens = tokens_raw
-            
-            if len(outcomes) != 2 or len(tokens) != 2:
+            if len(outcomes) != 2:
                 continue
             
-            # Normalize team names
-            team_a = normalize_nfl_team_name(outcomes[0])
-            team_b = normalize_nfl_team_name(outcomes[1])
+            # Filter out Over/Under/Yes/No
+            outcome_str = ' '.join(outcomes).lower()
+            if any(word in outcome_str for word in ['over', 'under', 'yes', 'no']):
+                continue
             
-            if not team_a or not team_b:
+            # Filter out obvious non-moneyline markets
+            question_lower = question.lower()
+            if any(phrase in question_lower for phrase in ['spread', 'total', 'o/u', 'points', 'score']):
+                continue
+            
+            # Both outcomes should be recognizable team names
+            t_a = normalize_nfl_team_name(outcomes[0])
+            t_b = normalize_nfl_team_name(outcomes[1])
+            
+            if t_a and t_b:
+                moneyline_market = market
                 if verbose:
-                    print(f"    Could not normalize NFL teams: {outcomes}")
-                continue
-            
-            team_a_code = get_nfl_team_code(team_a)
-            team_b_code = get_nfl_team_code(team_b)
-            
-            results.append({
-                'title': title,
-                'date': event_date,
-                'team_a': team_a,
-                'team_b': team_b,
-                'team_a_outcome': outcomes[0],
-                'team_b_outcome': outcomes[1],
-                'team_a_code': team_a_code,
-                'team_b_code': team_b_code,
-                'condition_id': condition_id,
-                'token_ids': {team_a_code: tokens[0], team_b_code: tokens[1]},
-                'start_date': start_date,
-            })
+                    print(f"      Found moneyline: {question} - {outcomes}")
+                break
         
-        if verbose:
-            print(f"  {len(results)} games match date {target_date}")
+        if not moneyline_market:
+            if verbose:
+                print(f"    No moneyline market found for: {title}")
+                print(f"      Available markets: {[m.get('question', '') for m in markets[:3]]}")
+            continue
         
-        return results
+        # Extract outcomes and token IDs
+        outcomes_raw = moneyline_market.get('outcomes', [])
+        tokens_raw = moneyline_market.get('clobTokenIds', [])
+        condition_id = moneyline_market.get('conditionId', '')
+        
+        if isinstance(outcomes_raw, str):
+            try:
+                outcomes = json.loads(outcomes_raw)
+            except:
+                outcomes = outcomes_raw
+        else:
+            outcomes = outcomes_raw
+        
+        if isinstance(tokens_raw, str):
+            try:
+                tokens = json.loads(tokens_raw)
+            except:
+                tokens = tokens_raw
+        else:
+            tokens = tokens_raw
+        
+        if len(outcomes) != 2 or len(tokens) != 2:
+            if verbose:
+                print(f"    Invalid outcomes/tokens for: {title}")
+            continue
+        
+        # Normalize team names
+        team_a = normalize_nfl_team_name(outcomes[0])
+        team_b = normalize_nfl_team_name(outcomes[1])
+        
+        if not team_a or not team_b:
+            if verbose:
+                print(f"    Could not normalize NFL teams: {outcomes}")
+            continue
+        
+        team_a_code = get_nfl_team_code(team_a)
+        team_b_code = get_nfl_team_code(team_b)
+        
+        results.append({
+            'title': title,
+            'date': event_date,
+            'team_a': team_a,
+            'team_b': team_b,
+            'team_a_outcome': outcomes[0],
+            'team_b_outcome': outcomes[1],
+            'team_a_code': team_a_code,
+            'team_b_code': team_b_code,
+            'condition_id': condition_id,
+            'token_ids': {team_a_code: tokens[0], team_b_code: tokens[1]},
+            'start_date': start_date,
+        })
     
-    except requests.exceptions.Timeout:
-        print("  ✗ Polymarket API timeout")
-        return []
-    except requests.exceptions.RequestException as e:
-        print(f"  ✗ Polymarket API error: {e}")
-        return []
+    if verbose:
+        print(f"  {len(results)} NFL games match date {target_date}")
+    
+    return results
 
 
 def build_nfl_markets_json(matched: List[Dict], target_date: str) -> Dict:

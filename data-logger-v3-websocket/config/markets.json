@@ -332,6 +332,271 @@
       "poly_title": "Oregon vs. Indiana",
       "home_team": "IND",
       "away_team": "ORE"
+    },
+    {
+      "event_id": "kxnflgame-26jan10lacar",
+      "description": "NFL: Los Angeles R at Carolina",
+      "sport": "NFL",
+      "event_date": "2026-01-05T21:29:55.698509Z",
+      "teams": {
+        "team_a": "panthers",
+        "team_b": "rams"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN10LACAR-CAR",
+          "opponent": "KXNFLGAME-26JAN10LACAR-LAR"
+        },
+        "market_a_refers_to": "panthers",
+        "market_b_refers_to": "rams"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-la-car-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "LAR": "78771016858683590931968399206043033368231163700315025308842883779104149970413",
+        "CAR": "915627592033002568512857939649312443434425908803980109605482558466978444816"
+      },
+      "poly_condition_id": "0x32102e4ab8969621cab85949c3c571b5008a4aa30d31022fa659d0ed287686a9",
+      "poly_title": "Rams vs. Panthers",
+      "home_team": "LAR",
+      "away_team": "CAR"
+    },
+    {
+      "event_id": "kxnflgame-26jan10gbchi",
+      "description": "NFL: Green Bay at Chicago",
+      "sport": "NFL",
+      "event_date": "2026-01-05T21:29:55.695654Z",
+      "teams": {
+        "team_a": "packers",
+        "team_b": "bears"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNFLGAME-26JAN10GBCHI-GB",
+          "opponent": "KXNFLGAME-26JAN10GBCHI-CHI"
+        },
+        "market_a_refers_to": "packers",
+        "market_b_refers_to": "bears"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nfl-gb-chi-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "GB": "16733339450778272272777651556206571354576285423443476742857616934917902333657",
+        "CHI": "13981385225696444678390540497320404976802298924493471598088103986401281808517"
+      },
+      "poly_condition_id": "0x889771fe1ffdfa067c4493ae89a11e1d2cb2699b0bb048e00ce8ba10d27dad84",
+      "poly_title": "Packers vs. Bears",
+      "home_team": "CHI",
+      "away_team": "GB"
+    },
+    {
+      "event_id": "kxnbagame-26jan10mincle",
+      "description": "NBA: Minnesota at Cleveland",
+      "sport": "NBA",
+      "event_date": "2026-01-04T15:03:34.642384Z",
+      "teams": {
+        "team_a": "timberwolves",
+        "team_b": "cavaliers"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN10MINCLE-MIN",
+          "opponent": "KXNBAGAME-26JAN10MINCLE-CLE"
+        },
+        "market_a_refers_to": "timberwolves",
+        "market_b_refers_to": "cavaliers"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-min-cle-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "MIN": "33963119312723998132193953391600393627750977397076277580336249660068651969709",
+        "CLE": "77121317678985226240586926716489763505068373495091616613805212276496116345037"
+      },
+      "poly_condition_id": "0x634e45884018546342536e693d5c9a42c07782012d504083f864512e6d764b7f",
+      "poly_title": "Timberwolves vs. Cavaliers",
+      "home_team": "CLE",
+      "away_team": "MIN"
+    },
+    {
+      "event_id": "kxnbagame-26jan10miaind",
+      "description": "NBA: Miami at Indiana",
+      "sport": "NBA",
+      "event_date": "2026-01-04T15:03:34.554916Z",
+      "teams": {
+        "team_a": "heat",
+        "team_b": "pacers"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN10MIAIND-MIA",
+          "opponent": "KXNBAGAME-26JAN10MIAIND-IND"
+        },
+        "market_a_refers_to": "heat",
+        "market_b_refers_to": "pacers"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-mia-ind-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "MIA": "18890518057324126597247951653679211042801181759923407110451543524294044589711",
+        "IND": "111054959482105497047691617828949510014554976829798966567195955538202888212324"
+      },
+      "poly_condition_id": "0x060f8adff46b30d3ba89accbbd6bdca82b0fe83879278742a88b4c6252630605",
+      "poly_title": "Heat vs. Pacers",
+      "home_team": "IND",
+      "away_team": "MIA"
+    },
+    {
+      "event_id": "kxnbagame-26jan10lacdet",
+      "description": "NBA: Los Angeles C at Detroit",
+      "sport": "NBA",
+      "event_date": "2026-01-04T15:03:34.557098Z",
+      "teams": {
+        "team_a": "clippers",
+        "team_b": "pistons"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN10LACDET-LAC",
+          "opponent": "KXNBAGAME-26JAN10LACDET-DET"
+        },
+        "market_a_refers_to": "clippers",
+        "market_b_refers_to": "pistons"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-lac-det-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "LAC": "16727051161123377521494265916757191449599517963091940877713850902046366088680",
+        "DET": "15044176709100764422285965716015438661847876289997552360015586438795378131860"
+      },
+      "poly_condition_id": "0xe05d3953add8a59365a2528a516328049de3b60993fd848870d5b1b84c21c6f5",
+      "poly_title": "Clippers vs. Pistons",
+      "home_team": "DET",
+      "away_team": "LAC"
+    },
+    {
+      "event_id": "kxnbagame-26jan10sasbos",
+      "description": "NBA: San Antonio at Boston",
+      "sport": "NBA",
+      "event_date": "2026-01-04T15:03:34.565793Z",
+      "teams": {
+        "team_a": "spurs",
+        "team_b": "celtics"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN10SASBOS-SAS",
+          "opponent": "KXNBAGAME-26JAN10SASBOS-BOS"
+        },
+        "market_a_refers_to": "spurs",
+        "market_b_refers_to": "celtics"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-sas-bos-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "SAS": "28201972561736986715698100329724916636305742152670965009578774100480531907363",
+        "BOS": "12552844121184220685298337674655910603683494204934197747973916061059993483097"
+      },
+      "poly_condition_id": "0x5fd42faff1030be25c622e1f9bb52b76801c5db6271fff1c163360e5afe2622d",
+      "poly_title": "Spurs vs. Celtics",
+      "home_team": "BOS",
+      "away_team": "SAS"
+    },
+    {
+      "event_id": "kxnbagame-26jan10dalchi",
+      "description": "NBA: Dallas at Chicago",
+      "sport": "NBA",
+      "event_date": "2026-01-04T15:03:34.656276Z",
+      "teams": {
+        "team_a": "mavericks",
+        "team_b": "bulls"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN10DALCHI-DAL",
+          "opponent": "KXNBAGAME-26JAN10DALCHI-CHI"
+        },
+        "market_a_refers_to": "mavericks",
+        "market_b_refers_to": "bulls"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-dal-chi-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "DAL": "52110109302664647963555231770669643566341200621347556985306015307870110452683",
+        "CHI": "115154490720818087713493464196516784753472413161681284774078276364880915724129"
+      },
+      "poly_condition_id": "0x1232641b2f821646f5a6336af448d0b30b060e3a54d3059da5e2ee550eb5fca7",
+      "poly_title": "Mavericks vs. Bulls",
+      "home_team": "CHI",
+      "away_team": "DAL"
+    },
+    {
+      "event_id": "kxnbagame-26jan10chauta",
+      "description": "NBA: Charlotte at Utah",
+      "sport": "NBA",
+      "event_date": "2026-01-04T15:03:34.707657Z",
+      "teams": {
+        "team_a": "hornets",
+        "team_b": "jazz"
+      },
+      "kalshi": {
+        "enabled": true,
+        "markets": {
+          "main": "KXNBAGAME-26JAN10CHAUTA-CHA",
+          "opponent": "KXNBAGAME-26JAN10CHAUTA-UTA"
+        },
+        "market_a_refers_to": "hornets",
+        "market_b_refers_to": "jazz"
+      },
+      "polymarket": {
+        "enabled": true,
+        "markets": {
+          "slug": "nba-cha-uta-2026-01-10"
+        }
+      },
+      "poly_token_ids": {
+        "CHA": "52586413379648866858172849697342239875667710210314028413379286435170451497044",
+        "UTA": "82150370526775779694717872566348092217597526376726820524618641395190942036461"
+      },
+      "poly_condition_id": "0x05d2ffddc558c2c3b5b89de64f700ee0885fdea82440a895cd79bd8cf964d1a3",
+      "poly_title": "Hornets vs. Jazz",
+      "home_team": "UTA",
+      "away_team": "CHA"
     }
-  ]
+  ],
+  "_updated_at": "2026-01-10T20:13:05.693634+00:00"
 }

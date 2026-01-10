@@ -371,21 +371,23 @@ def query_polymarket_game(sport: str, target_date: str, team_a: str, team_b: str
     team_a_code = get_team_code(team_a_canonical, sport).lower()
     team_b_code = get_team_code(team_b_canonical, sport).lower()
     
-    # Try different slug patterns
-    slug_patterns = [
-        f"{sport.lower()}-{team_a_code}-{team_b_code}-{target_date}",
-        f"{sport.lower()}-{team_b_code}-{team_a_code}-{target_date}",
-    ]
+    # Helper to expand LA team codes
+    def expand_la_codes(code):
+        """Returns list of possible code variations for LA teams"""
+        if code == "lar":
+            return ["lar", "la"]
+        elif code == "lac":
+            return ["lac", "la"]
+        elif code == "lal":
+            return ["lal", "la"]
+        return [code]
     
-    # Special handling for LA Rams (code is LAR but slug uses LA)
-    if team_a_code == "lar":
-        slug_patterns.extend([
-            f"{sport.lower()}-la-{team_b_code}-{target_date}",
-        ])
-    if team_b_code == "lar":
-        slug_patterns.extend([
-            f"{sport.lower()}-{team_a_code}-la-{target_date}",
-        ])
+    # Generate all slug variations
+    slug_patterns = []
+    for a_code in expand_la_codes(team_a_code):
+        for b_code in expand_la_codes(team_b_code):
+            slug_patterns.append(f"{sport.lower()}-{a_code}-{b_code}-{target_date}")
+            slug_patterns.append(f"{sport.lower()}-{b_code}-{a_code}-{target_date}")
     
     for slug in slug_patterns:
         try:

@@ -324,15 +324,65 @@ def query_kalshi_game(sport: str, target_date: str, team_a: str, team_b: str) ->
             if teams_match:
                 print(f"  ✓ Kalshi match: {title} ({event_ticker})")
                 
-                # Get team codes
+                # IMPORTANT: Fetch actual market tickers from Kalshi API
+                # Kalshi uses their own team codes (e.g., "LA" not "LAR")
+                markets_url = f"https://api.elections.kalshi.com/trade-api/v2/markets?event_ticker={event_ticker}"
+                markets_resp = requests.get(markets_url, timeout=15)
+                markets_data = markets_resp.json()
+                
+                actual_markets = markets_data.get('markets', [])
+                if len(actual_markets) != 2:
+                    print(f"  ✗ Expected 2 markets, got {len(actual_markets)}")
+                    continue
+                
+                # Extract actual tickers and codes
+                market_tickers = {}
+                for m in actual_markets:
+                    ticker = m.get('ticker', '')
+                    # Extract code from ticker (last part after final dash)
+                    kalshi_code = ticker.split('-')[-1]
+                    market_tickers[kalshi_code] = ticker
+                    print(f"    Found market: {ticker} (code: {kalshi_code})")
+                
+                # Match Kalshi codes to our teams based on title order
+                # Title format: "Team A at Team B" - team_a is away, team_b is home
+                codes = list(market_tickers.keys())
+                
+                # Get team codes (for our internal use)
                 code_a = get_team_code(team_a_canonical, sport)
                 code_b = get_team_code(team_b_canonical, sport)
                 
-                # Determine which team is first in the Kalshi ticker
-                # Parse from event ticker
-                ticker_suffix = event_ticker.split('-')[-1]  # e.g., "LACAR"
+                # Find which Kalshi ticker corresponds to which team
+                # Use the title to determine team order
+                title_parts = title.split(' at ')
+                if len(title_parts) == 2:
+                    away_team = normalize_team(title_parts[0], sport)
+                    home_team = normalize_team(title_parts[1], sport)
+                else:
+                    away_team = event_team_a
+                    home_team = event_team_b
                 
-                # Build market tickers
+                # Assign tickers based on matching
+                market_a_ticker = None
+                market_b_ticker = None
+                kalshi_code_a = None
+                kalshi_code_b = None
+                
+                for kalshi_code, ticker in market_tickers.items():
+                    # Try to match Kalshi code to our team
+                    if team_a_canonical == away_team:
+                        # team_a is away team
+                        market_a_ticker = list(market_tickers.values())[0]
+                        market_b_ticker = list(market_tickers.values())[1]
+                        kalshi_code_a = list(market_tickers.keys())[0]
+                        kalshi_code_b = list(market_tickers.keys())[1]
+                    else:
+                        market_a_ticker = list(market_tickers.values())[1]
+                        market_b_ticker = list(market_tickers.values())[0]
+                        kalshi_code_a = list(market_tickers.keys())[1]
+                        kalshi_code_b = list(market_tickers.keys())[0]
+                    break
+                
                 return {
                     'event_ticker': event_ticker,
                     'title': title,
@@ -341,8 +391,10 @@ def query_kalshi_game(sport: str, target_date: str, team_a: str, team_b: str) ->
                     'team_b': team_b_canonical,
                     'team_a_code': code_a,
                     'team_b_code': code_b,
-                    'market_a_ticker': f"{event_ticker}-{code_a}",
-                    'market_b_ticker': f"{event_ticker}-{code_b}",
+                    'market_a_ticker': market_a_ticker,
+                    'market_b_ticker': market_b_ticker,
+                    'kalshi_code_a': kalshi_code_a,
+                    'kalshi_code_b': kalshi_code_b,
                 }
         
         print(f"  ✗ Kalshi: No match found for {team_a} vs {team_b} on {target_date}")

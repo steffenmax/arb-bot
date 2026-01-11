@@ -21,6 +21,7 @@ from typing import Dict, Optional, Tuple
 from dataclasses import dataclass
 import sys
 import os
+from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -118,6 +119,35 @@ class DutchBookExecutor:
         self.both_legs_filled = 0
         self.one_leg_only = 0
         self.total_profit = 0.0
+    
+    def _send_alert(self, message: str):
+        """
+        Send alert for critical events (one-sided fills, etc.)
+        
+        Currently logs to console and file. Can be extended to:
+        - Email notifications
+        - Telegram bot
+        - Discord webhook
+        - SMS via Twilio
+        """
+        timestamp = datetime.now().isoformat()
+        alert_msg = f"\n{'='*60}\n🚨 ALERT [{timestamp}]\n{message}\n{'='*60}\n"
+        
+        # Log to console
+        print(alert_msg)
+        
+        # Log to alerts file
+        try:
+            with open("data/alerts.log", "a") as f:
+                f.write(alert_msg + "\n")
+        except Exception as e:
+            print(f"  ⚠️  Failed to write alert to file: {e}")
+        
+        # TODO: Add email/Telegram/Discord notifications here
+        # Example:
+        # if self.telegram_bot_token:
+        #     requests.post(f"https://api.telegram.org/bot{self.telegram_bot_token}/sendMessage", 
+        #                   json={"chat_id": self.telegram_chat_id, "text": message})
         
         print(f"✓ Dutch Book executor initialized")
     
@@ -355,6 +385,44 @@ class DutchBookExecutor:
             
             print(f"\n⚠️  ONE LEG ONLY - Directional position (not arbitrage)")
             
+            # IMPROVEMENT 2: Try to cancel the unfilled leg
+            cancel_attempted = False
+            cancel_success = False
+            
+            if kalshi_filled and not poly_filled:
+                # Kalshi filled, Polymarket didn't - try to cancel Poly order
+                poly_order_id = poly_result.get('order_id')
+                if poly_order_id:
+                    print(f"  Attempting to cancel unfilled Polymarket order {poly_order_id}...")
+                    cancel_attempted = True
+                    try:
+                        success, msg = self.polymarket_executor.cancel_order(poly_order_id)
+                        if success:
+                            print(f"  ✓ Polymarket order cancelled successfully")
+                            cancel_success = True
+                        else:
+                            print(f"  ⚠️  Could not cancel Polymarket order: {msg}")
+                            print(f"     (Order may have already filled or expired)")
+                    except Exception as e:
+                        print(f"  ⚠️  Error cancelling Polymarket order: {e}")
+            
+            if poly_filled and not kalshi_filled:
+                # Polymarket filled, Kalshi didn't - try to cancel Kalshi order
+                kalshi_order_id = kalshi_result.get('order_id')
+                if kalshi_order_id:
+                    print(f"  Attempting to cancel unfilled Kalshi order {kalshi_order_id}...")
+                    cancel_attempted = True
+                    try:
+                        success, msg = self.kalshi_executor.cancel_order(kalshi_order_id)
+                        if success:
+                            print(f"  ✓ Kalshi order cancelled successfully")
+                            cancel_success = True
+                        else:
+                            print(f"  ⚠️  Could not cancel Kalshi order: {msg}")
+                            print(f"     (Order may have already filled or expired)")
+                    except Exception as e:
+                        print(f"  ⚠️  Error cancelling Kalshi order: {e}")
+            
             # Record the filled leg
             if kalshi_filled:
                 self.inventory_tracker.record_fill(
@@ -365,7 +433,7 @@ class DutchBookExecutor:
                     price=kalshi_result['price'],
                     is_buy=True
                 )
-                print(f"  Holding: {kalshi_result['size']:.2f} {opportunity.kalshi_team} YES on Kalshi")
+                print(f"  Holding: {kalshi_result['size']:.2f} {opportunity.kalshi_team} YES on Kalshi @ ${kalshi_result['price']:.3f}")
             
             if poly_filled:
                 self.inventory_tracker.record_fill(
@@ -376,7 +444,47 @@ class DutchBookExecutor:
                     price=poly_result['price'],
                     is_buy=True
                 )
-                print(f"  Holding: {poly_result['size']:.2f} {opportunity.poly_team} YES on Polymarket")
+                print(f"  Holding: {poly_result['size']:.2f} {opportunity.poly_team} YES on Polymarket @ ${poly_result['price']:.3f}")
+            
+            # IMPROVEMENT 3: Send alert for one-sided fill
+            filled_platform = "Kalshi" if kalshi_filled else "Polymarket"
+            filled_team = opportunity.kalshi_team if kalshi_filled else opportunity.poly_team
+            filled_size = kalshi_result['size'] if kalshi_filled else poly_result['size']
+            filled_price = kalshi_result['price'] if kalshi_filled else poly_result['price']
+            filled_cost = filled_size * filled_price
+            
+            unfilled_platform = "Polymarket" if kalshi_filled else "Kalshi"
+            unfilled_team = opportunity.poly_team if kalshi_filled else opportunity.kalshi_team
+            
+            alert_message = f"""⚠️  ONE-SIDED FILL ALERT
+
+Event: {opportunity.event_id}
+Edge: {opportunity.edge_bps}bps
+
+FILLED LEG:
+  Platform: {filled_platform}
+  Team: {filled_team}
+  Size: {filled_size:.2f} contracts
+  Price: ${filled_price:.3f}
+  Cost: ${filled_cost:.2f}
+
+UNFILLED LEG:
+  Platform: {unfilled_platform}
+  Team: {unfilled_team}
+  Cancel attempted: {'Yes' if cancel_attempted else 'No'}
+  Cancel success: {'Yes' if cancel_success else 'N/A' if not cancel_attempted else 'No'}
+
+POSITION STATUS:
+  Type: Directional (NOT arbitrage)
+  Action: Holding position until settlement
+  Risk: Exposed to {filled_team} outcome
+  
+RECOMMENDED ACTION:
+  1. Monitor {filled_platform} position
+  2. Consider manually closing if {filled_team} odds worsen
+  3. Position will settle at $1.00 if {filled_team} wins, $0.00 otherwise"""
+            
+            self._send_alert(alert_message)
             
             print(f"{'='*60}\n")
             
@@ -399,7 +507,7 @@ class DutchBookExecutor:
                 execution_time_ms=execution_time,
                 one_leg_only=True,
                 error="Only one leg filled",
-                reason="Directional position - hold until settlement or sell"
+                reason=f"Directional position on {filled_platform} - hold until settlement or sell"
             )
         
         # Case 3: NEITHER FILLED - Clean miss

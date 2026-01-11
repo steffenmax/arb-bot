@@ -78,6 +78,9 @@ class ArbBot:
         self.trades_executed = 0
         self.total_pnl = 0
         
+        # In-flight deduplication: Track opportunities currently being executed
+        self.in_flight_opportunities: set = set()
+        
         # Performance tracking
         self.start_time = None
         self.last_stats_print = 0
@@ -1174,6 +1177,19 @@ class ArbBot:
     
     async def _execute_dutch_book(self, opportunity: DutchBookOpportunity, size: float):
         """Execute Dutch Book arbitrage (or simulate in paper mode)"""
+        # Create unique key for in-flight deduplication
+        opp_key = f"{opportunity.event_id}_{opportunity.kalshi_team}_{opportunity.poly_team}"
+        
+        # Check if already executing
+        if opp_key in self.in_flight_opportunities:
+            print(f"⚠️  Opportunity already being executed, skipping duplicate")
+            print(f"   Event: {opportunity.event_id}")
+            print(f"   Legs: {opportunity.kalshi_team} (Kalshi) / {opportunity.poly_team} (Poly)")
+            return
+        
+        # Mark as in-flight
+        self.in_flight_opportunities.add(opp_key)
+        
         try:
             self.trades_executed += 1
             
@@ -1295,6 +1311,9 @@ class ArbBot:
             
         except Exception as e:
             print(f"✗ Execution error: {e}")
+        finally:
+            # Always remove from in-flight (even on error)
+            self.in_flight_opportunities.discard(opp_key)
     
     def _log_paper_trade(self, opportunity: DutchBookOpportunity, size: float, simulated_pnl: float):
         """Log paper trade to CSV for analysis"""

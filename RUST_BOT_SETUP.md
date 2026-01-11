@@ -54,15 +54,15 @@ The Rust bot needs the same credentials as your Python bot:
 ```bash
 cd /Users/maxsteffen/Desktop/arbitrage_bot/terauss-bot
 
-# Create .env file
+# Create .env file (use your actual credentials)
 cat > .env << 'EOF'
 # Kalshi credentials
-KALSHI_API_KEY_ID=***REDACTED_KALSHI_API_KEY***
-KALSHI_PRIVATE_KEY_PATH=/Users/maxsteffen/Desktop/arbitrage_bot/kalshi_private_key.pem
+KALSHI_API_KEY_ID=your_kalshi_api_key_here
+KALSHI_PRIVATE_KEY_PATH=/path/to/your/kalshi_private_key.pem
 
 # Polymarket credentials
-POLY_PRIVATE_KEY=***REDACTED_POLYMARKET_PRIVATE_KEY***
-POLY_FUNDER=***REDACTED_WALLET_ADDRESS***
+POLY_PRIVATE_KEY=0xYOUR_POLYMARKET_PRIVATE_KEY_HERE
+POLY_FUNDER=0xYOUR_WALLET_ADDRESS_HERE
 
 # Bot configuration
 DRY_RUN=1

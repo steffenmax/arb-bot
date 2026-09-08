@@ -99,9 +99,10 @@ async function loadConfig() {
   S.config = await api('GET', '/api/config');
 }
 let runTimer = null;
-function scheduleRun(opts) { clearTimeout(runTimer); runTimer = setTimeout(() => run(opts), 300); }
+function scheduleRun(opts) { clearTimeout(runTimer); S.pending = true; runTimer = setTimeout(() => run(opts), 300); }
 async function run(opts = {}) {
   clearTimeout(runTimer);
+  S.pending = false;
   S.loading = true; renderChrome();
   try {
     let d;
@@ -115,7 +116,7 @@ async function run(opts = {}) {
     S.dash = d; S.lastGood = d; S.error = null;
     S.config = d.config;
     indexDash();
-    if (!S.mock && opts.save !== false) api('PUT', '/api/config', S.config).catch(() => {});
+    if (!S.mock && opts.save !== false) await api('PUT', '/api/config', S.config).catch(() => {});
     if (opts.toast) toast(opts.toast.msg, opts.toast.undo);
   } catch (e) {
     S.error = e.message || String(e);
@@ -341,8 +342,8 @@ function onAction(act, el, ev) {
       else go(`#/branches/${e}/${w}`);
       break;
     }
-    case 'lock': setLock(entry, week, (el.dataset.teams || '').split('+').filter(Boolean)); break;
-    case 'unlock': setLock(entry, week, null); break;
+    case 'lock': if (el.closest('#drawer')) { S.ui.drawer = null; renderDrawer(); } setLock(entry, week, (el.dataset.teams || '').split('+').filter(Boolean)); break;
+    case 'unlock': if (el.closest('#drawer')) { S.ui.drawer = null; renderDrawer(); } setLock(entry, week, null); break;
     case 'twopick': setTwoPick(week, el.getAttribute('aria-pressed') !== 'true'); break;
     case 'override': setOverride(el.dataset.game, el.dataset.side || null); break;
     case 'clear-overrides': clearOverrides(); break;

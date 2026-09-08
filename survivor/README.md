@@ -37,7 +37,9 @@ under `survivor/cache/`.
   pin it; everything after it re-optimizes.
 * **Schedule**: every game of the season with kickoff, lines, win
   probability and its source, live score and status, pick markers, and a
-  what-if override (force a home or away win and see the plan change).
+  what-if override. A what-if assumes a result: the game counts as
+  decided, so nobody can pick it any more except an entry that has locked
+  it, and the whole plan re-optimizes around that result.
 * **Teams**: rating, injury impact, the injury report with per-player
   impact, efficiency stats, and the remaining schedule as a probability
   strip.
@@ -154,7 +156,9 @@ python3 -m survivor [--season Y] [--week N] [--end-week N] [--entries N]
   replaces an injured starter.
 * Pool dynamics (how many rivals are alive, what teams they have left)
   are only modeled through the optional pick-percentage adjustment.
-* Ties count as losses.
+* Ties count as losses for both sides.
+* A locked pick whose game is final stays with the entry; if it lost, the
+  entry is reported eliminated.
 
 ## Tests
 

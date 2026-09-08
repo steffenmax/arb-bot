@@ -313,6 +313,10 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
                 # A lock in a played week is history: those teams are burned.
                 used.update(ts)
                 warnings.append(f"Entry {e['name']}: week {wk} lock {'/'.join(ts)} counted as used (week is over).")
+            elif int(wk) > horizon:
+                # Beyond the horizon the lock cannot be planned, but its teams
+                # are reserved so the plan does not burn them earlier.
+                used.update(ts)
             else:
                 locks[int(wk)] = list(ts)
         specs.append(EntrySpec(e["name"], used, locks, e["alive"]))
@@ -509,4 +513,4 @@ def refresh_all() -> dict:
     """Force re-download of every feed; returns fetch times."""
     cfgmod = __import__("survivor.dashboard.config", fromlist=["load"])
     bundle = Bundle(cfgmod.load(), refresh=True)
-    return bundle.ages
+    return bundle.ages, bundle.warnings

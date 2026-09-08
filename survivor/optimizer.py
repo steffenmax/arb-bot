@@ -571,7 +571,10 @@ def plan_entries(
             s.alive = False
             continue
         if best_path(table, s.used, week_locks[s.name]) is None:
-            warnings[s.name].append("No feasible path: too few teams left for the horizon.")
+            if not any(table.available(w) for w in range(len(table.weeks))):
+                warnings[s.name].append("No games left to pick in the plan window.")
+            else:
+                warnings[s.name].append("No feasible path: too few teams left for the horizon.")
     alive = [s for s in alive if s.alive]
     live = [s for s in alive if best_path(table, s.used, week_locks[s.name]) is not None]
     interchangeable = len({(frozenset(s.used), tuple(sorted((w, tuple(t)) for w, t in week_locks[s.name].items()))) for s in live}) <= 1

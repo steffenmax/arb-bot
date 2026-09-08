@@ -46,7 +46,11 @@ returns HTTP 400 with `{"error": "message"}`.
 * `entries[].used`: teams that entry has already burned (any week).
 * `entries[].locks`: week (string key) to the list of teams the user has
   manually chosen for that week. A locked week is not re-optimized. The
-  list length must equal `picksPerWeek` for that week (default 1).
+  list length must equal `picksPerWeek` for that week (default 1). A lock
+  on a game that is already decided or in progress keeps that team for the
+  entry (the pick was made before kickoff); a locked team that lost marks
+  the entry eliminated. Locks in weeks before the current week are
+  treated as used teams.
 * `entries[].alive`: false means eliminated; the entry is shown but excluded
   from optimization.
 * `picksPerWeek`: weeks that require more than one pick (the "two picks"
@@ -63,7 +67,11 @@ returns HTTP 400 with `{"error": "message"}`.
 * `topBranches`: how many candidate picks to expand per entry per week.
 * `pickPct`: crowd pick percentages, keyed by week then team. Optional.
 * `overrides`: what-if outcomes for games: `"home"`, `"away"`, or omit.
-  A game with an override is treated as final with that winner.
+  A game with an override is treated as decided with that winner: it can
+  no longer be picked by anyone, except an entry that has locked one of
+  its teams for that week, whose pick then wins or loses for certain.
+  Overrides on games that are already final or in progress are ignored
+  with a warning in `meta.warnings`.
 * `injuryAdjust`: apply the injury impact model to rating-based
   probabilities (weeks without posted lines).
 
@@ -169,7 +177,11 @@ returns HTTP 400 with `{"error": "message"}`.
 * `games[].status`: `scheduled`, `in_progress`, `final`, `postponed`.
   `statusDetail` is display text from ESPN (clock and quarter when live).
 * `games[].pHome`: decayed probability used by the optimizer.
-  `pHomeRaw`: before decay. For final games or overrides, `pHome` is 1 or 0.
+  `pHomeRaw`: the market or rating probability before decay (kept even for
+  final games). For final games or overrides, `pHome` is 1 or 0; a tie is 0
+  for both sides.
+* `games[].timeValid`: false when the kickoff time is a placeholder (late
+  season flex games); show the date only.
 * `games[].source`: `moneyline`, `spread`, `rating`, `final`, `live`, `override`.
   `live` is a game in progress: it keeps its pre-game probability but can
   no longer be picked.

@@ -41,7 +41,7 @@ class Handler(BaseHTTPRequestHandler):
     def _read_json(self):
         if "chunked" in (self.headers.get("Transfer-Encoding") or "").lower():
             raise cfgmod.ConfigError("chunked request bodies are not supported; send Content-Length")
-        length = int(self.headers.get("Content-Length") or 0)
+        length = max(0, int(self.headers.get("Content-Length") or 0))
         if length == 0:
             return {}
         raw = self.rfile.read(length)
@@ -103,8 +103,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(200, payload)
             elif path == "/api/refresh":
                 with _lock:
-                    ages = service.refresh_all()
-                self._json(200, {"ok": True, "dataAge": ages})
+                    ages, warns = service.refresh_all()
+                self._json(200, {"ok": not warns, "dataAge": ages, "warnings": warns})
             else:
                 self._json(404, {"error": "not found"})
         except cfgmod.ConfigError as exc:

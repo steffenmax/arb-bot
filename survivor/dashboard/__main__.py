@@ -39,6 +39,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _read_json(self):
+        if "chunked" in (self.headers.get("Transfer-Encoding") or "").lower():
+            raise cfgmod.ConfigError("chunked request bodies are not supported; send Content-Length")
         length = int(self.headers.get("Content-Length") or 0)
         if length == 0:
             return {}
@@ -87,6 +89,9 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, cfgmod.save(self._read_json()))
         except cfgmod.ConfigError as exc:
             self._json(400, {"error": str(exc)})
+        except Exception as exc:  # noqa: BLE001
+            traceback.print_exc()
+            self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path

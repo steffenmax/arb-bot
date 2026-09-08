@@ -23,13 +23,20 @@ def _now_iso() -> str:
 
 
 def _clean(x):
-    """Make numpy / NaN values JSON-safe."""
+    """Make numpy / pandas / NaN / infinite values JSON-safe."""
+    if x is None:
+        return None
     if isinstance(x, (np.floating, float)):
-        return None if math.isnan(float(x)) else float(x)
+        f = float(x)
+        return None if (math.isnan(f) or math.isinf(f)) else f
     if isinstance(x, (np.integer,)):
         return int(x)
     if isinstance(x, np.bool_):
         return bool(x)
+    if isinstance(x, pd.Timestamp):
+        return None if pd.isna(x) else x.isoformat()
+    if x is pd.NaT or x is pd.NA:
+        return None
     if isinstance(x, str) and x.lower() == "nan":
         return None
     return x
@@ -72,6 +79,8 @@ class Bundle:
         self.warnings: list[str] = []
         self.ages: dict[str, str | None] = {}
         games = data.load_games(refresh=refresh)
+        if data.LAST_WARNING:
+            self.warnings.append(data.LAST_WARNING)
         self.ages["games"] = dt.datetime.fromtimestamp(
             __import__("os").path.getmtime(data.CACHE_FILE), dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.all_games = games
@@ -115,24 +124,27 @@ class Bundle:
     def _note(self, key: str, res) -> None:
         self.ages[key] = res.fetched_iso
         if res.error:
-            self.warnings.append(f"{key}: {res.error}" + (" (using cached copy)" if res.data else ""))
+            has_data = res.data is not None and res.fetched_at > 0
+            self.warnings.append(f"{key}: {res.error}" + (" (using cached copy)" if has_data else " (no data)"))
 
     def _merge(self, sg: pd.DataFrame) -> pd.DataFrame:
         """Overlay ESPN live status, scores and fresh odds on the nflverse table."""
         sg = sg.copy()
         status, detail, kickoff, home_s, away_s, headline, broadcast = [], [], [], [], [], [], []
-        venue, weather, line_src, clock, period, prov = [], [], [], [], [], []
+        venue, weather, line_src, clock, period, prov, time_valid = [], [], [], [], [], [], []
         for _, row in sg.iterrows():
             eid = str(int(row["espn"])) if pd.notna(row.get("espn")) else None
             ev = self.events.get(eid) if eid else None
-            st = "final" if pd.notna(row.get("result")) else "scheduled"
-            det = ""
+            has_result = pd.notna(row.get("result"))
+            st = "final" if has_result else "scheduled"
+            det = "Final" if has_result else ""
             hs = _clean(row.get("home_score"))
             as_ = _clean(row.get("away_score"))
             src = "nflverse" if pd.notna(row.get("home_moneyline")) or pd.notna(row.get("spread_line")) else None
             if ev:
-                st = ev["status"] if ev["status"] != "final" or True else st
-                det = ev.get("statusDetail") or ""
+                if not has_result:
+                    st = ev["status"]
+                    det = ev.get("statusDetail") or ""
                 if ev["status"] == "final":
                     if ev.get("homeScore") is not None:
                         hs, as_ = ev["homeScore"], ev["awayScore"]
@@ -164,7 +176,9 @@ class Bundle:
             clock.append((ev or {}).get("clock"))
             period.append((ev or {}).get("period"))
             prov.append((ev or {}).get("oddsProvider"))
+            time_valid.append(bool((ev or {}).get("timeValid", True)))
         sg["status"] = status
+        sg["time_valid"] = time_valid
         sg["status_detail"] = detail
         sg["kickoff"] = kickoff
         sg["home_score_live"] = home_s
@@ -180,13 +194,34 @@ class Bundle:
         return sg
 
     # ---- injuries -> rating adjustments --------------------------------
+    def starter_qb(self, team: str) -> dict:
+        """Starting quarterback: depth chart first, then nflverse's projected
+        starter for the team's next game (by name)."""
+        info = dict(self.qb1.get(team) or {})
+        if not info.get("name"):
+            sg = getattr(self, "season_games", None)
+            rows = self.all_games[(self.all_games["season"] == self.season) & (self.all_games["game_type"] == "REG")] if sg is None else sg
+            rows = rows[(rows["home_team"] == team) | (rows["away_team"] == team)].sort_values("week")
+            for _, r in rows.iterrows():
+                name = r.get("home_qb_name") if r["home_team"] == team else r.get("away_qb_name")
+                if isinstance(name, str) and name:
+                    info["name"] = name
+                    break
+        return info
+
+    def is_starter_qb(self, team: str, injury: dict) -> bool:
+        qb = self.starter_qb(team)
+        if qb.get("espnId") and injury.get("athleteId"):
+            return injury["athleteId"] == qb["espnId"]
+        name = (qb.get("name") or "").strip().lower()
+        return bool(name) and name == (injury.get("player") or "").strip().lower()
+
     def injury_objects(self, team: str) -> list[Injury]:
         out = []
-        qb1 = (self.qb1.get(team) or {}).get("espnId")
         for i in self.injuries.get(team, []):
             pos = i["position"]
             if pos == "QB":
-                pos = "QB" if (qb1 and i.get("athleteId") == qb1) else "QB2"
+                pos = "QB" if self.is_starter_qb(team, i) else "QB2"
             out.append(Injury(i["player"], pos, i["status"], i.get("detail", ""), i.get("updated") or ""))
         return out
 
@@ -257,14 +292,30 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
     if cfg["injuryAdjust"]:
         ratings.adjustment = bundle.injury_adjustments(max_week - current_week)
     live_ids = set(sg.loc[sg["status"] == "in_progress", "game_id"].astype(str))
-    game_probs = probs.game_probabilities(sg, ratings, cfg["overrides"], live_ids, current_week)
+    decided = set(sg.loc[sg["result"].notna() | (sg["status"] == "in_progress"), "game_id"].astype(str))
+    overrides = {}
+    for gid, side in cfg["overrides"].items():
+        if gid in decided:
+            warnings.append(f"What-if on {gid} ignored: the game is already decided.")
+        else:
+            overrides[gid] = side
+    game_probs = probs.game_probabilities(sg, ratings, overrides, live_ids, current_week)
     picks_per_week = {int(k): v for k, v in cfg["picksPerWeek"].items()}
-    pickable = {(int(wk), t) for e in cfg["entries"] for wk, ts in e["locks"].items() for t in ts}
-    table = probs.build_prob_table(game_probs, teams, current_week, horizon, cfg["decay"], picks_per_week, pickable)
+    table = probs.build_prob_table(game_probs, teams, current_week, horizon, cfg["decay"], picks_per_week)
 
     # ---- plan -----------------------------------------------------------
-    specs = [EntrySpec(e["name"], set(e["used"]), {int(k): v for k, v in e["locks"].items()}, e["alive"])
-             for e in cfg["entries"]]
+    specs = []
+    for e in cfg["entries"]:
+        used = set(e["used"])
+        locks = {}
+        for wk, ts in e["locks"].items():
+            if int(wk) < current_week:
+                # A lock in a played week is history: those teams are burned.
+                used.update(ts)
+                warnings.append(f"Entry {e['name']}: week {wk} lock {'/'.join(ts)} counted as used (week is over).")
+            else:
+                locks[int(wk)] = list(ts)
+        specs.append(EntrySpec(e["name"], used, locks, e["alive"]))
     crowd = cfg["pickPct"].get(str(current_week), {})
     bonus = contrarian_bonus(table, crowd) if crowd else None
     weight = cfg["contrarianWeight"] if crowd else 0.0
@@ -296,7 +347,7 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
         if week >= current_week:
             sources[gp.source] = sources.get(gp.source, 0) + 1
         games_out.append({
-            "id": gid, "week": week, "kickoff": row["kickoff"], "timeValid": True,
+            "id": gid, "week": week, "kickoff": row["kickoff"], "timeValid": bool(row.get("time_valid", True)),
             "home": row["home_team"], "away": row["away_team"],
             "neutral": str(row.get("location")) == "Neutral",
             "spread": _clean(row.get("spread_line")),
@@ -378,7 +429,7 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
             "player": i["player"], "position": i["position"], "status": i["status"], "detail": i.get("detail"),
             "returnDate": i.get("returnDate"), "comment": i.get("comment"), "updated": i.get("updated"),
             "impact": _clean(next((o.points for o in injury_objs[t] if o.player == i["player"]), 0.0)),
-            "isStarterQb": bool(i["position"] == "QB" and (bundle.qb1.get(t) or {}).get("espnId") == i.get("athleteId")),
+            "isStarterQb": bool(i["position"] == "QB" and bundle.is_starter_qb(t, i)),
         } for i in bundle.injuries.get(t, [])]
         teams_out[t] = {
             "code": t, "name": meta.get("name") or data.TEAM_NAMES.get(t, t), "city": meta.get("city"),
@@ -389,7 +440,7 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
             "rating": _clean(round(ratings.rating[t], 2)),
             "injuryImpact": _clean(round(now_adj.get(t, 0.0), 2)),
             "ratingAdjusted": _clean(round(ratings.rating[t] + now_adj.get(t, 0.0), 2)),
-            "qb1": (bundle.qb1.get(t) or {}).get("name"),
+            "qb1": bundle.starter_qb(t).get("name"),
             "stats": {
                 "pointsFor": rec.get("pointsFor", 0), "pointsAgainst": rec.get("pointsAgainst", 0),
                 "pointDiff": rec.get("pointDiff", 0),
@@ -407,7 +458,7 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
     for er in result.entries:
         e_cfg = next(e for e in cfg["entries"] if e["name"] == er.spec.name)
         item = {
-            "name": er.spec.name, "alive": er.spec.alive, "used": e_cfg["used"], "locks": e_cfg["locks"],
+            "name": er.spec.name, "alive": er.spec.alive, "used": sorted(er.spec.used), "locks": e_cfg["locks"],
             "warnings": er.warnings,
         }
         if er.plan is None:

@@ -1,8 +1,12 @@
 """Parser, config and injury-model tests (no network)."""
 import unittest
 
-from survivor import espn
+import numpy as np
+import pandas as pd
+
+from survivor import espn, probs
 from survivor.dashboard import config
+from survivor.dashboard.service import sanitize
 from survivor.injuries import Injury, team_impact
 
 
@@ -96,3 +100,48 @@ class InjuryModelTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GameProbabilityTests(unittest.TestCase):
+    def frame(self, result=None, home_ml=-150.0, away_ml=130.0):
+        return pd.DataFrame([{"game_id": "2026_01_A_B", "week": 1, "home_team": "B", "away_team": "A",
+                              "result": result, "home_moneyline": home_ml, "away_moneyline": away_ml, "spread_line": 3.0}])
+
+    def ratings(self):
+        return probs.Ratings({"A": 0.0, "B": 0.0}, 1.5)
+
+    def test_tie_is_a_loss_for_both(self):
+        gp = probs.game_probabilities(self.frame(result=0.0), self.ratings())[0]
+        self.assertTrue(gp.final and gp.tie)
+        table = probs.build_prob_table([gp], ["A", "B"], 1, 1, 0.0)
+        self.assertEqual(table.prob[0, 0], 0.0)
+        self.assertEqual(table.prob[0, 1], 0.0)
+        self.assertFalse(table.pickable.any())
+
+    def test_override_is_decided_not_pickable(self):
+        gp = probs.game_probabilities(self.frame(), self.ratings(), overrides={"2026_01_A_B": "away"})[0]
+        self.assertTrue(gp.final)
+        self.assertEqual(gp.source, "override")
+        table = probs.build_prob_table([gp], ["A", "B"], 1, 1, 0.0)
+        self.assertEqual(table.prob[0, 0], 1.0)   # A (away) wins
+        self.assertEqual(table.available(0), [])
+
+    def test_live_game_keeps_market_probability(self):
+        gp = probs.game_probabilities(self.frame(), self.ratings(), live_ids={"2026_01_A_B"})[0]
+        self.assertEqual(gp.source, "live")
+        self.assertTrue(gp.final)
+        self.assertAlmostEqual(gp.p_home, probs.devig(-150, 130))
+        table = probs.build_prob_table([gp], ["A", "B"], 1, 2, 0.5)
+        self.assertAlmostEqual(table.prob[0, 1], probs.devig(-150, 130))   # live is not decayed away
+
+
+class SanitizeTests(unittest.TestCase):
+    def test_json_safety(self):
+        out = sanitize({"a": np.float64("nan"), "b": float("inf"), "c": np.int64(3), "d": [np.bool_(True), pd.NaT, pd.Timestamp("2026-09-09")], "e": pd.NA})
+        self.assertEqual(out["a"], None)
+        self.assertEqual(out["b"], None)
+        self.assertEqual(out["c"], 3)
+        self.assertEqual(out["d"][0], True)
+        self.assertIsNone(out["d"][1])
+        self.assertTrue(out["d"][2].startswith("2026-09-09"))
+        self.assertIsNone(out["e"])

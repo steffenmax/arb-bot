@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Survivor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="mast" id="mast">
+  <div class="mast-inner">
+    <a class="wordmark" href="#/week">Survivor</a>
+    <span class="divider"></span>
+    <span class="data-s muted" id="mast-season"></span>
+    <nav class="tabs" id="tabs" aria-label="views"></nav>
+    <div class="controls" id="controls"></div>
+  </div>
+  <div class="progress" id="progress"></div>
+  <div class="recomputing" id="recomputing" hidden>RECOMPUTING PLAN</div>
+</header>
+<div class="toast" id="toast" hidden></div>
+<section class="rail" id="rail" aria-label="season rail"></section>
+<div class="banner" id="banner" hidden></div>
+<main id="view" class="container"></main>
+<footer id="foot" class="foot container"></footer>
+<aside id="drawer" class="drawer" hidden aria-label="drawer"></aside>
+<div id="shortcuts" class="shortcuts" hidden>
+  <div><span class="kbd">1–6</span> views</div><div><span class="kbd">[ ]</span> focus week</div><div><span class="kbd">r</span> refresh</div><div><span class="kbd">d</span> density</div><div><span class="kbd">/</span> team search</div><div><span class="kbd">Esc</span> close</div><div><span class="kbd">?</span> this sheet</div>
+</div>
+<script src="app.js"></script>
+<script src="views.js"></script>
+</body>
+</html>

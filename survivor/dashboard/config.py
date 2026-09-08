@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import threading
 
 from .. import data
 
@@ -171,7 +172,7 @@ def load() -> dict:
 def save(cfg: dict) -> dict:
     cfg = normalize(cfg)
     os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
-    tmp = CONFIG_FILE + ".tmp"
+    tmp = f"{CONFIG_FILE}.{os.getpid()}.{threading.get_ident()}.tmp"
     with open(tmp, "w") as fh:
         json.dump(cfg, fh, indent=2)
     os.replace(tmp, CONFIG_FILE)

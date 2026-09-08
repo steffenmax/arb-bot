@@ -122,9 +122,10 @@ class GameProb:
     home: str
     away: str
     p_home: float
-    source: str                 # final, override, moneyline, spread, rating
-    final: bool = False         # game has a result (cannot be picked)
+    source: str                 # final, override, live, moneyline, spread, rating
+    final: bool = False         # decided or in progress: cannot be picked (unless locked)
     p_home_market: float | None = None   # market/rating probability even when final
+    tie: bool = False           # final tie: a loss for both sides
 
 
 def _market_prob(g: pd.Series, ratings: Ratings, weeks_ahead: int = 0) -> tuple[float, str]:
@@ -156,13 +157,15 @@ def game_probabilities(
         if gid in live_ids and pd.isna(g.get("result")):
             out.append(GameProb(gid, int(g["week"]), g["home_team"], g["away_team"], market, "live", True, market))
         elif pd.notna(g.get("result")):
-            # nflverse result = home score - away score; a tie counts as a loss
+            # nflverse result = home score - away score; a tie is a loss for both
             res = float(g["result"])
             p = 1.0 if res > 0 else 0.0
-            out.append(GameProb(gid, int(g["week"]), g["home_team"], g["away_team"], p, "final", True, market))
+            out.append(GameProb(gid, int(g["week"]), g["home_team"], g["away_team"], p, "final", True, market, tie=res == 0))
         elif gid in overrides:
+            # A what-if result: the game is treated as decided, so it can no
+            # longer be picked except by an entry that already locked it.
             p = 1.0 if overrides[gid] == "home" else 0.0
-            out.append(GameProb(gid, int(g["week"]), g["home_team"], g["away_team"], p, "override", False, market))
+            out.append(GameProb(gid, int(g["week"]), g["home_team"], g["away_team"], p, "override", True, market))
         else:
             out.append(GameProb(gid, int(g["week"]), g["home_team"], g["away_team"], market, src, False, market))
     return out
@@ -185,6 +188,11 @@ class ProbTable:
     is_home: np.ndarray         # bool
     game_id: np.ndarray         # object array of game ids or ""
     picks_required: list[int]   # picks per week, aligned with weeks
+    pickable: np.ndarray = None  # bool: False when the game is decided or live
+
+    def __post_init__(self):
+        if self.pickable is None:
+            self.pickable = ~np.isnan(self.prob)
 
     def week_index(self, week: int) -> int:
         return self.weeks.index(week)
@@ -193,7 +201,8 @@ class ProbTable:
         return self.teams.index(team)
 
     def available(self, w: int) -> list[str]:
-        return [t for j, t in enumerate(self.teams) if not np.isnan(self.prob[w, j])]
+        """Teams that can still be picked in week index w."""
+        return [t for j, t in enumerate(self.teams) if self.pickable[w, j] and not np.isnan(self.prob[w, j])]
 
 
 def build_prob_table(
@@ -203,16 +212,15 @@ def build_prob_table(
     end_week: int,
     decay: float,
     picks_per_week: dict[int, int] | None = None,
-    pickable_finals: set[tuple[int, str]] | None = None,
 ) -> ProbTable:
     """Assemble the week-by-team table the optimizer works on.
 
-    Final games are unpickable unless (week, team) is in pickable_finals
-    (an entry already locked that team, so the result simply stands).
+    Decided games (finals, what-if overrides) and games in progress keep
+    their probability so survival math stays exact, but are flagged as not
+    pickable; only an entry that locked that team can still hold it.
     Overrides and finals are never decayed: they are certainties.
     """
     picks_per_week = picks_per_week or {}
-    pickable_finals = pickable_finals or set()
     weeks = list(range(start_week, end_week + 1))
     nw, nt = len(weeks), len(teams)
     prob = np.full((nw, nt), np.nan)
@@ -221,6 +229,7 @@ def build_prob_table(
     gid = np.full((nw, nt), "", dtype=object)
     home = np.zeros((nw, nt), dtype=bool)
     certain = np.zeros((nw, nt), dtype=bool)
+    pickable = np.zeros((nw, nt), dtype=bool)
     tix = {t: i for i, t in enumerate(teams)}
     for gp in game_probs:
         if gp.week < start_week or gp.week > end_week:
@@ -230,17 +239,16 @@ def build_prob_table(
         w = gp.week - start_week
         for team, p, is_home in ((gp.home, gp.p_home, True), (gp.away, 1.0 - gp.p_home, False)):
             j = tix[team]
-            if gp.final and (gp.week, team) not in pickable_finals:
-                continue
-            prob[w, j] = p
+            prob[w, j] = 0.0 if gp.tie else p
             opp[w, j] = gp.away if is_home else gp.home
             src[w, j] = gp.source
             gid[w, j] = gp.game_id
             home[w, j] = is_home
             certain[w, j] = gp.source in ("final", "override")
+            pickable[w, j] = not gp.final
     raw = prob.copy()
     ahead = np.arange(nw, dtype=float)[:, None]
     shrink = np.exp(-decay * ahead)
     decayed = np.where(certain, prob, 0.5 + (prob - 0.5) * shrink)
     required = [max(1, int(picks_per_week.get(wk, 1))) for wk in weeks]
-    return ProbTable(weeks, teams, decayed, raw, opp, src, home, gid, required)
+    return ProbTable(weeks, teams, decayed, raw, opp, src, home, gid, required, pickable)

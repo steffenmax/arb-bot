@@ -114,9 +114,7 @@ def main(argv: list[str] | None = None) -> None:
     ratings = probs.fit_ratings(season_games, teams, prior=prior)
     game_probs = probs.game_probabilities(season_games, ratings)
     locks = parse_locks(args.lock)
-    pickable = {(wk, t) for lk in locks.values() for wk, ts in lk.items() for t in ts}
-    table = probs.build_prob_table(game_probs, teams, week, end_week, args.decay,
-                                   {w: 2 for w in two_pick}, pickable)
+    table = probs.build_prob_table(game_probs, teams, week, end_week, args.decay, {w: 2 for w in two_pick})
 
     entries = parse_used(args.used, args.entries)
     specs = [EntrySpec(name, used, locks.get(name, {})) for name, used in entries]

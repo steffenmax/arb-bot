@@ -56,3 +56,4 @@ data/
 
 # Survivor pool data cache
 survivor/cache/
+survivor/dashboard/static/mock-dashboard.json

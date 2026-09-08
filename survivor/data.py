@@ -18,6 +18,7 @@ GAMES_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/game
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 CACHE_FILE = os.path.join(CACHE_DIR, "games.csv")
 CACHE_MAX_AGE_SECONDS = 6 * 3600
+LAST_WARNING: str | None = None
 
 TEAM_NAMES = {
     "ARI": "Cardinals", "ATL": "Falcons", "BAL": "Ravens", "BUF": "Bills",
@@ -53,6 +54,8 @@ def normalize_team(text: str) -> str:
 
 def load_games(refresh: bool = False, cache_file: str = CACHE_FILE) -> pd.DataFrame:
     """Load the nflverse games table, downloading when the cache is stale."""
+    global LAST_WARNING
+    LAST_WARNING = None
     stale = True
     if os.path.exists(cache_file) and not refresh:
         age = time.time() - os.path.getmtime(cache_file)
@@ -65,7 +68,8 @@ def load_games(refresh: bool = False, cache_file: str = CACHE_FILE) -> pd.DataFr
         except Exception as exc:  # noqa: BLE001 - fall back to a stale cache
             if not os.path.exists(cache_file):
                 raise RuntimeError(f"Could not download {GAMES_URL}: {exc}") from exc
-            print(f"warning: download failed ({exc}); using cached data")
+            LAST_WARNING = f"games: download failed ({exc}); using cached data"
+            print(f"warning: {LAST_WARNING}")
     games = pd.read_csv(cache_file, low_memory=False)
     games["gameday"] = pd.to_datetime(games["gameday"])
     return games

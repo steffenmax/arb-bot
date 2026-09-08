@@ -63,13 +63,54 @@ class Path:
 
 
 def _base_cost(table: ProbTable, used: set[str], penalty: np.ndarray | None) -> np.ndarray:
-    cost = np.where(np.isnan(table.prob), INFEASIBLE, -np.log(np.clip(table.prob, 1e-9, 1.0)))
+    cost = np.where(np.isnan(table.prob) | ~table.pickable, INFEASIBLE, -np.log(np.clip(table.prob, 1e-9, 1.0)))
     if penalty is not None:
         cost = np.where(cost < INFEASIBLE, cost + penalty, cost)
     for t in used:
         if t in table.teams:
             cost[:, table.team_index(t)] = INFEASIBLE
     return cost
+
+
+def _solve(table: ProbTable, cost: np.ndarray, row_week: list[int], locked: set[tuple[int, int]], depth: int = 0):
+    """Assignment with the no-same-game constraint inside multi-pick weeks.
+
+    The Hungarian solution may put both sides of one game into a two-pick
+    week. When that happens we branch: forbid one side, forbid the other,
+    keep the cheaper feasible result. Locked teams are never forbidden.
+    Returns (chosen {week: [team idx]}, total cost) or None.
+    """
+    rows, cols = linear_sum_assignment(cost)
+    chosen: dict[int, list[int]] = {}
+    total = 0.0
+    for r, j in zip(rows, cols):
+        if cost[r, j] >= INFEASIBLE:
+            return None
+        chosen.setdefault(row_week[r], []).append(int(j))
+        total += float(cost[r, j])
+    for w, js in chosen.items():
+        names = {table.teams[j] for j in js}
+        for j in js:
+            opp = table.opponent[w, j]
+            if opp in names:
+                k = table.team_index(opp)
+                if depth >= 12:
+                    return None
+                options = []
+                for forbid in (j, k):
+                    if (w, forbid) in locked:
+                        continue
+                    alt = cost.copy()
+                    for r, ww in enumerate(row_week):
+                        if ww == w:
+                            alt[r, forbid] = INFEASIBLE
+                    res = _solve(table, alt, row_week, locked, depth + 1)
+                    if res is not None:
+                        options.append(res)
+                if not options:
+                    return None
+                return min(options, key=lambda o: o[1])
+    return chosen, total
 
 
 def best_path(
@@ -100,6 +141,7 @@ def best_path(
     if len(row_week) > nt:
         return None
     cost = base[row_week, :].copy()
+    locked: set[tuple[int, int]] = set()
     for w, teams in locks.items():
         if w < 0 or w >= nw:
             continue
@@ -112,39 +154,25 @@ def best_path(
             return None
         for j in jids:
             cost[other_rows, j] = INFEASIBLE
+            locked.add((w, j))
         mask = np.ones(nt, dtype=bool)
         mask[jids] = False
         for r in week_rows[:len(jids)]:
             cost[r, mask] = INFEASIBLE
+            for j in jids:
+                # A locked team stays available even when its game is already
+                # decided or in progress (the entry committed before kickoff).
+                pj = table.prob[w, j]
+                if np.isnan(pj):
+                    return None
+                if not table.pickable[w, j]:
+                    cost[r, j] = -math.log(max(float(pj), 1e-9))
         for r in week_rows[len(jids):]:
             cost[r, jids] = INFEASIBLE
-    for _ in range(8):
-        rows, cols = linear_sum_assignment(cost)
-        chosen: dict[int, list[int]] = {}
-        for r, j in zip(rows, cols):
-            if cost[r, j] >= INFEASIBLE:
-                return None
-            chosen.setdefault(row_week[r], []).append(int(j))
-        conflict = None
-        for w, js in chosen.items():
-            names = {table.teams[j] for j in js}
-            for j in js:
-                if table.opponent[w, j] in names:
-                    # two picks in one week from the same game: forbid the weaker
-                    k = table.team_index(table.opponent[w, j])
-                    weaker = j if table.prob[w, j] <= table.prob[w, k] else k
-                    conflict = (w, weaker)
-                    break
-            if conflict:
-                break
-        if conflict is None:
-            break
-        w, j = conflict
-        for r, ww in enumerate(row_week):
-            if ww == w:
-                cost[r, j] = INFEASIBLE
-    else:
+    solved = _solve(table, cost, row_week, locked)
+    if solved is None:
         return None
+    chosen, _ = solved
     picks, log_surv, bonus = [], 0.0, 0.0
     for w in range(nw):
         js = sorted(chosen.get(w, []), key=lambda j: -table.prob[w, j])
@@ -352,8 +380,13 @@ def select_joint(
     contrarian_weight: float = 0.0,
     objective: str = "any",
     n_alternatives: int = 6,
+    interchangeable: bool = True,
 ) -> JointResult:
-    """Pick one candidate path per entry to maximize the joint objective."""
+    """Pick one candidate path per entry to maximize the joint objective.
+
+    interchangeable: the entries share history, so permutations of one pick
+    set are equivalent and only the best arrangement is listed.
+    """
     best, best_score, ranked = None, -np.inf, []
     cache: dict = {}
     for combo in itertools.product(*[range(len(c)) for c in entry_candidates]):
@@ -367,7 +400,7 @@ def select_joint(
     ranked.sort(key=lambda r: r[0], reverse=True)
     seen, deduped = set(), []
     for score, value, picks in ranked:
-        key = tuple(sorted(tuple(sorted(p)) for p in picks))
+        key = tuple(sorted(tuple(sorted(p)) for p in picks)) if interchangeable else tuple(tuple(p) for p in picks)
         if key not in seen:
             seen.add(key)
             deduped.append((score, value, picks))
@@ -430,7 +463,10 @@ def contrarian_bonus(
     others = sum(share[t] * probs[t] for t in probs)
     bonus = {}
     for t, p in probs.items():
-        surviving = share[t] + (others - share[t] * p)
+        j = table.team_index(t)
+        opp = table.opponent[0, j]
+        opp_term = share.get(opp, 0.0) * probs.get(opp, 0.0)
+        surviving = share[t] + (others - share[t] * p - opp_term)
         bonus[t] = -math.log(max(surviving, 1e-6))
     return bonus
 
@@ -495,12 +531,17 @@ def plan_entries(
         while locks and best_path(table, s.used, locks) is None:
             w = max(locks)
             warnings[s.name].append(
-                f"Lock {'/'.join(locks[w])} in week {table.weeks[w]} is infeasible and was ignored.")
+                f"Locks cannot all be honored; ignored {'/'.join(locks[w])} in week {table.weeks[w]}.")
             del locks[w]
         week_locks[s.name] = locks
         return locks
 
     hedging = objective != "expected" and hedge > 0
+    # The crowd bonus enters the path costs and the joint score at the same
+    # weight, so a weight of 0 really switches it off.
+    if week0_bonus and contrarian_weight != 1.0:
+        week0_bonus = {t: b * contrarian_weight for t, b in week0_bonus.items()}
+    contrarian_weight = 1.0 if week0_bonus else 0.0
 
     def penalty_for(name: str, plans: dict[str, Path]) -> np.ndarray | None:
         others = [p for n, p in plans.items() if n != name]
@@ -524,9 +565,16 @@ def plan_entries(
     alive = [s for s in specs if s.alive]
     for s in alive:
         feasible_locks(s)
+        lost = [t for t in week_locks[s.name].get(0, []) if table.prob[0, table.team_index(t)] <= 0.0]
+        if lost:
+            warnings[s.name].append(f"Eliminated: {'/'.join(lost)} lost in week {table.weeks[0]}.")
+            s.alive = False
+            continue
         if best_path(table, s.used, week_locks[s.name]) is None:
             warnings[s.name].append("No feasible path: too few teams left for the horizon.")
+    alive = [s for s in alive if s.alive]
     live = [s for s in alive if best_path(table, s.used, week_locks[s.name]) is not None]
+    interchangeable = len({(frozenset(s.used), tuple(sorted((w, tuple(t)) for w, t in week_locks[s.name].items()))) for s in live}) <= 1
 
     plans: dict[str, Path] = {}
     joint = summarize_joint(table, [])
@@ -534,7 +582,7 @@ def plan_entries(
         rounds = 1 + (refine_rounds if hedging and len(live) > 1 else 0)
         for _ in range(rounds):
             cands = [candidates_for(s, plans) for s in live]
-            joint = select_joint(table, cands, contrarian_weight, objective)
+            joint = select_joint(table, cands, contrarian_weight, objective, interchangeable=interchangeable)
             new_plans = hedged_plans(live, joint)
             settled = plans and all(new_plans[s.name].first_teams == plans[s.name].first_teams for s in live)
             plans = new_plans

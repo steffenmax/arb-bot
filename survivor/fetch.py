@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import threading
 import time
 import urllib.request
 
@@ -76,11 +77,14 @@ def cached_fetch(url: str, name: str, ttl: float, refresh: bool = False,
         return load_cached(False, None)
     try:
         body = http_get(url, headers)
-        tmp = path + ".tmp"
+        value = parse(body) if parse else body   # a bad body never replaces a good cache
+        tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
         with open(tmp, "wb") as fh:
             fh.write(body)
         os.replace(tmp, path)
-        return load_cached(False, None)
+        mtime = os.path.getmtime(path)
+        _memo_put(path, mtime, value)
+        return FetchResult(value, mtime, False, None)
     except Exception as exc:  # noqa: BLE001
         if have:
             return load_cached(True, str(exc))

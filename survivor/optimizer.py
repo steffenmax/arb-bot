@@ -78,6 +78,7 @@ def best_path(
     locks: dict[int, list[str]] | None = None,
     week0_bonus: dict[str, float] | None = None,
     penalty: np.ndarray | None = None,
+    base_cost: np.ndarray | None = None,
 ) -> Path | None:
     """Exact best no-repeat path over the table's weeks.
 
@@ -89,7 +90,7 @@ def best_path(
     """
     locks = {w: list(ts) for w, ts in (locks or {}).items() if ts}
     nw, nt = table.prob.shape
-    base = _base_cost(table, used, penalty)
+    base = base_cost.copy() if base_cost is not None else _base_cost(table, used, penalty)
     if week0_bonus:
         for t, b in week0_bonus.items():
             j = table.team_index(t)
@@ -200,9 +201,10 @@ def branches_for_week(
     week_lock = list(locks.get(w, []))
     need = table.picks_required[w]
     out: list[Branch] = []
+    base = _base_cost(table, used, penalty)
     if len(week_lock) >= need:
         pinned[w] = week_lock[:need]
-        path = best_path(table, used, pinned, week0_bonus, penalty)
+        path = best_path(table, used, pinned, week0_bonus, penalty, base)
         if path:
             out.append(Branch(table.weeks[w], list(path.picks[w].teams), path, w))
         return out
@@ -212,7 +214,7 @@ def branches_for_week(
 
     def add(pin: list[str]) -> None:
         pinned[w] = week_lock + pin
-        path = best_path(table, used, pinned, week0_bonus, penalty)
+        path = best_path(table, used, pinned, week0_bonus, penalty, base)
         if path is None:
             return
         key = tuple(sorted(path.picks[w].teams))
@@ -309,7 +311,7 @@ class JointResult:
 OBJECTIVES = ("any", "final", "expected")
 
 
-def joint_value(table: ProbTable, paths: list[Path], objective: str) -> float:
+def joint_value(table: ProbTable, paths: list[Path], objective: str, cache: dict | None = None) -> float:
     """Value of a set of entry paths under the chosen objective.
 
     "any":      expected number of weeks (through the horizon) with at least
@@ -317,12 +319,28 @@ def joint_value(table: ProbTable, paths: list[Path], objective: str) -> float:
                 staying represented every week, not just at the horizon.
     "final":    P(at least one entry alive at the horizon).
     "expected": expected number of entries alive at the horizon.
+
+    `cache` memoizes subset curves across many combinations that share
+    paths (the joint search evaluates every pair many times).
     """
     if not paths:
         return 0.0
     if objective == "expected":
         return float(sum(p.survival for p in paths))
-    curve = any_alive_curve(table, paths)
+    if cache is None:
+        curve = any_alive_curve(table, paths)
+    else:
+        total = np.zeros(len(table.weeks))
+        for r in range(1, len(paths) + 1):
+            sign = 1.0 if r % 2 == 1 else -1.0
+            for subset in itertools.combinations(paths, r):
+                key = tuple(sorted(id(p) for p in subset))
+                sub = cache.get(key)
+                if sub is None:
+                    sub = subset_alive_curve(table, list(subset))
+                    cache[key] = sub
+                total += sign * sub
+        curve = np.clip(total, 0.0, 1.0)
     if objective == "final":
         return float(curve[-1])
     return float(np.sum(curve))
@@ -337,9 +355,10 @@ def select_joint(
 ) -> JointResult:
     """Pick one candidate path per entry to maximize the joint objective."""
     best, best_score, ranked = None, -np.inf, []
+    cache: dict = {}
     for combo in itertools.product(*[range(len(c)) for c in entry_candidates]):
         paths = [entry_candidates[e][i] for e, i in enumerate(combo)]
-        value = joint_value(table, paths, objective)
+        value = joint_value(table, paths, objective, cache)
         bonus = float(np.mean([p.bonus for p in paths]))
         score = math.log(max(value, 1e-300)) + contrarian_weight * bonus
         ranked.append((score, value, [p.first_teams for p in paths]))

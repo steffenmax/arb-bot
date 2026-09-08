@@ -343,6 +343,11 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
 
     # ---- teams --------------------------------------------------------------
     now_adj = ratings.adjustment.get(0, {})
+    by_week_team: dict[tuple[int, str], pd.Series] = {}
+    for _, row in sg.iterrows():
+        by_week_team[(int(row["week"]), row["home_team"])] = row
+        by_week_team[(int(row["week"]), row["away_team"])] = row
+    injury_objs = {t: bundle.injury_objects(t) for t in teams}
     teams_out = {}
     for t in teams:
         meta = bundle.team_meta.get(t, {})
@@ -350,11 +355,10 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
         prev = bundle.standings_prev.get(t, {})
         sched = []
         for week in range(1, max_week + 1):
-            rows = sg[(sg["week"] == week) & ((sg["home_team"] == t) | (sg["away_team"] == t))]
-            if rows.empty:
+            row = by_week_team.get((week, t))
+            if row is None:
                 sched.append({"week": week, "bye": True})
                 continue
-            row = rows.iloc[0]
             gid = str(row["game_id"])
             gp = gp_by_id[gid]
             home = row["home_team"] == t
@@ -373,7 +377,7 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
         inj = [{
             "player": i["player"], "position": i["position"], "status": i["status"], "detail": i.get("detail"),
             "returnDate": i.get("returnDate"), "comment": i.get("comment"), "updated": i.get("updated"),
-            "impact": _clean(next((o.points for o in bundle.injury_objects(t) if o.player == i["player"]), 0.0)),
+            "impact": _clean(next((o.points for o in injury_objs[t] if o.player == i["player"]), 0.0)),
             "isStarterQb": bool(i["position"] == "QB" and (bundle.qb1.get(t) or {}).get("espnId") == i.get("athleteId")),
         } for i in bundle.injuries.get(t, [])]
         teams_out[t] = {

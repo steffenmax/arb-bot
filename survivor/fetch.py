@@ -27,8 +27,22 @@ class FetchResult:
         return dt.datetime.fromtimestamp(self.fetched_at, dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+_MEMO: dict[str, tuple[float, object]] = {}
+
+
 def _cache_path(name: str) -> str:
     return os.path.join(CACHE_DIR, name)
+
+
+def _memo_get(name: str, mtime: float):
+    hit = _MEMO.get(name)
+    if hit and hit[0] == mtime:
+        return hit[1]
+    return None
+
+
+def _memo_put(name: str, mtime: float, value) -> None:
+    _MEMO[name] = (mtime, value)
 
 
 def http_get(url: str, headers: dict | None = None) -> bytes:
@@ -48,22 +62,28 @@ def cached_fetch(url: str, name: str, ttl: float, refresh: bool = False,
     os.makedirs(CACHE_DIR, exist_ok=True)
     have = os.path.exists(path)
     age = time.time() - os.path.getmtime(path) if have else None
+    def load_cached(stale: bool, error: str | None) -> FetchResult:
+        mtime = os.path.getmtime(path)
+        value = _memo_get(path, mtime)
+        if value is None:
+            with open(path, "rb") as fh:
+                body = fh.read()
+            value = parse(body) if parse else body
+            _memo_put(path, mtime, value)
+        return FetchResult(value, mtime, stale, error)
+
     if have and not refresh and age is not None and age < ttl:
-        with open(path, "rb") as fh:
-            body = fh.read()
-        return FetchResult(parse(body) if parse else body, os.path.getmtime(path), False, None)
+        return load_cached(False, None)
     try:
         body = http_get(url, headers)
         tmp = path + ".tmp"
         with open(tmp, "wb") as fh:
             fh.write(body)
         os.replace(tmp, path)
-        return FetchResult(parse(body) if parse else body, time.time(), False, None)
+        return load_cached(False, None)
     except Exception as exc:  # noqa: BLE001
         if have:
-            with open(path, "rb") as fh:
-                body = fh.read()
-            return FetchResult(parse(body) if parse else body, os.path.getmtime(path), True, str(exc))
+            return load_cached(True, str(exc))
         return FetchResult(None, 0.0, True, str(exc))
 
 

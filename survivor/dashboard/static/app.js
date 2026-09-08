@@ -83,7 +83,9 @@ function spreadTxt(g, code) {
   if (s === 0) return 'PK';
   return minus(s > 0 ? `+${s}` : String(s));
 }
-function hasOverride(gameIds) { return (gameIds || []).some((id) => S.config.overrides && S.config.overrides[id]); }
+function effOverride(gameId) { const g = game(gameId); return g && g.source === 'override' ? g.override : null; }
+function hasOverride(gameIds) { return (gameIds || []).some((id) => effOverride(id)); }
+function effectiveOverrideCount() { return Object.keys(S.config.overrides || {}).filter((id) => effOverride(id)).length; }
 function snapshotConfig() { return JSON.parse(JSON.stringify(S.config)); }
 function isWide() { return window.innerWidth >= 1024; }
 
@@ -114,12 +116,13 @@ async function run(opts = {}) {
     }
     S.prevJoint = S.dash ? S.dash.joint : null;
     S.dash = d; S.lastGood = d; S.error = null;
-    S.config = d.config;
+    S.config = JSON.parse(JSON.stringify(d.config));
     indexDash();
     if (!S.mock && opts.save !== false) await api('PUT', '/api/config', S.config).catch(() => {});
     if (opts.toast) toast(opts.toast.msg, opts.toast.undo);
   } catch (e) {
     S.error = e.message || String(e);
+    if (opts.revert) { S.config = opts.revert; toast(`Change rejected: ${S.error}`); }
     if (!S.dash && S.lastGood) S.dash = S.lastGood;
   }
   S.loading = false;
@@ -143,7 +146,7 @@ function mutate(fn, opts = {}) {
   const before = snapshotConfig();
   fn(S.config);
   const undo = () => { S.config = before; run({ toast: null }); };
-  scheduleRun({ toast: opts.toast ? { msg: opts.toast, undo } : null });
+  scheduleRun({ toast: opts.toast ? { msg: opts.toast, undo } : null, revert: before });
   renderChrome();
 }
 function setLock(entryName, week, teams, msg) {
@@ -216,10 +219,14 @@ function renderMasthead() {
   const ctl = $('#controls');
   if (!d) { ctl.innerHTML = ''; return; }
   const cw = d.meta.currentWeek, max = d.meta.weeksInSeason;
-  const horizonOpts = []; for (let w = cw; w <= max; w++) horizonOpts.push(`<option value="${w}" ${c.horizon === w ? 'selected' : ''}>W${w}</option>`);
-  const decayOpts = DECAY_OPTIONS.map((v) => `<option value="${v}" ${Math.abs((c.decay ?? 0.03) - v) < 1e-9 ? 'selected' : ''}>${Math.exp(-v).toFixed(2)}</option>`).join('');
+  const withCurrent = (values, current, eq) => (values.some((v) => eq(v, current)) ? values : [...values, current].sort((x, y) => x - y));
+  const horizonVals = withCurrent(Array.from({ length: max - cw + 1 }, (_, i) => cw + i), Number(c.horizon), (a, b) => a === b);
+  const horizonOpts = horizonVals.map((w) => `<option value="${w}" ${c.horizon === w ? 'selected' : ''}>W${w}</option>`).join('');
+  const decayVals = withCurrent(DECAY_OPTIONS, Number(c.decay ?? 0.03), (a, b) => Math.abs(a - b) < 1e-9);
+  const decayOpts = decayVals.map((v) => `<option value="${v}" ${Math.abs((c.decay ?? 0.03) - v) < 1e-9 ? 'selected' : ''}>${Math.exp(-v).toFixed(2)}</option>`).join('');
   const objOpts = Object.entries(OBJECTIVES).map(([k, v]) => `<option value="${k}" ${c.objective === k ? 'selected' : ''}>${v}</option>`).join('');
-  const conOpts = CONTRARIAN.map((v) => `<option value="${v}" ${Number(c.contrarianWeight) === v ? 'selected' : ''}>${v.toFixed(2)}</option>`).join('');
+  const conVals = withCurrent(CONTRARIAN, Number(c.contrarianWeight), (a, b) => Math.abs(a - b) < 1e-9);
+  const conOpts = conVals.map((v) => `<option value="${v}" ${Math.abs(Number(c.contrarianWeight) - v) < 1e-9 ? 'selected' : ''}>${v.toFixed(2)}</option>`).join('');
   const ages = d.meta.dataAge || {};
   const live = d.games.some((g) => g.status === 'in_progress');
   const fresh = (key, label, limitMin) => {
@@ -252,7 +259,7 @@ function renderRail() {
   const entries = d.entries;
   const wkCells = weeks.map((w) => {
     const two = (c.picksPerWeek || {})[String(w.week)] > 1;
-    const ovr = w.gameIds.some((id) => c.overrides && c.overrides[id]);
+    const ovr = w.gameIds.some((id) => effOverride(id));
     const cls = ['rail-wk', w.week === cw ? 'current' : '', w.week > H ? 'beyond' : '', w.week === S.ui.focusWeek && w.week !== cw ? 'focus' : '', w.week === cw ? 'rail-col-current' : '', w.week === H ? 'rail-col-horizon' : ''].filter(Boolean).join(' ');
     return `<button class="${cls}" data-act="focus-week" data-week="${w.week}" title="Week ${w.week} · ${esc(w.label || '')}">${w.week}${two ? '<sup>2</sup>' : ''}${ovr ? '<i class="ovr"></i>' : ''}</button>`;
   }).join('') + '<div class="rail-bracket">]</div>';

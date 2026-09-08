@@ -49,6 +49,7 @@ function statusLine(g) {
 function viewWeek() {
   const d = S.dash, cw = d.meta.currentWeek, H = d.meta.horizon, wi = weekInfo(cw);
   const alive = d.entries.filter((e) => e.alive && e.plan && e.plan.length);
+  const aliveN = d.entries.filter((e) => e.alive).length;
   const heroes = d.entries.map((e) => heroCard(e)).join('');
   const j = d.joint, pj = S.prevJoint;
   const delta = (k, v) => { if (!pj || pj[k] == null || v == null) return ''; const dv = (v - pj[k]) * (k === 'expectedAlive' || k === 'expectedWeeksAny' ? 1 : 100); if (Math.abs(dv) < 0.05) return '<div class="delta">—</div>'; return `<div class="delta ${dv > 0 ? 'up' : 'down'}">${signed(dv, k === 'expectedAlive' ? 2 : 1)} vs last run</div>`; };
@@ -61,7 +62,7 @@ function viewWeek() {
       <div><span class="label">This week all win</span>${fig(allWin, 'm', 'win')}</div>
     </div>` : '';
   const warnings = d.entries.flatMap((e) => (e.warnings || []).map((w) => `<span>${esc(e.name)}: ${esc(w)}</span>`));
-  return `<div class="view-head"><div><div class="folio">Week ${cw}</div><div class="sub">${esc(weekRange(wi))} · ${wi ? wi.gameIds.length : 0} games · ${alive.length} of ${d.entries.length} entries alive · horizon W${H}</div></div>
+  return `<div class="view-head"><div><div class="folio">Week ${cw}</div><div class="sub">${esc(weekRange(wi))} · ${wi ? wi.gameIds.length : 0} games · ${aliveN} of ${d.entries.length} entries alive · horizon W${H}</div></div>
       <div class="tools"><button class="text-btn" data-act="open-crowd">Crowd %</button><a class="text-btn" href="#/plan">Season plan →</a></div></div>
     ${warnings.length ? `<div class="warnlist">${warnings.join('')}</div>` : ''}
     <div class="heroes" style="--n:${d.entries.length}">${heroes}</div>
@@ -162,7 +163,7 @@ function survivalChart() {
   const grid = [0, 0.25, 0.5, 0.75, 1].map((v) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${Math.round(v * 100)}</text>`).join('');
   const ticks = weeks.map((w, i) => {
     const locks = d.entries.some((e) => cfgEntry(e.name) && cfgEntry(e.name).locks && cfgEntry(e.name).locks[String(w)]);
-    const wi = weekInfo(w); const ovr = wi && wi.gameIds.some((id) => S.config.overrides[id]);
+    const wi = weekInfo(w); const ovr = wi && wi.gameIds.some((id) => effOverride(id));
     const two = (S.config.picksPerWeek || {})[String(w)] > 1;
     return `<text x="${x(i + 1).toFixed(1)}" y="${Hh - 8}" text-anchor="middle" style="${i === 0 ? 'fill:var(--ink)' : ''}">W${w}${two ? '²' : ''}</text>${locks ? `<line class="tick-lock" x1="${x(i + 1).toFixed(1)}" x2="${x(i + 1).toFixed(1)}" y1="${Hh - B}" y2="${Hh - B + 5}"/>` : ''}${ovr ? `<line class="tick-ovr" x1="${(x(i + 1) - 3).toFixed(1)}" x2="${(x(i + 1) + 3).toFixed(1)}" y1="${Hh - B + 3}" y2="${Hh - B + 3}"/>` : ''}`;
   }).join('');
@@ -204,7 +205,7 @@ function viewPlan() {
   const d = S.dash, c = S.config, cw = d.meta.currentWeek, H = d.meta.horizon, j = d.joint;
   const entries = d.entries;
   const locks = c.entries.reduce((n, e) => n + Object.keys(e.locks || {}).length, 0);
-  const ovr = Object.keys(c.overrides || {}).length;
+  const ovr = effectiveOverrideCount();
   const head = `<div class="head"><span class="label">Week</span></div><div class="head"><span class="label">2×</span></div>` +
     entries.map((e) => `<div class="head entry ${entryClass(e.name)}"><span class="label">Entry ${esc(e.name)}${e.alive ? '' : ' · out'}</span></div>`).join('') +
     `<div class="head joint"><span class="label">Joint → W${H}</span></div>`;
@@ -315,7 +316,7 @@ function viewSchedule() {
   const focus = S.ui.focusWeek || cw;
   const mode = S.ui.scheduleWeek === 'all' ? 'all' : 'focus';
   const weeks = mode === 'all' ? d.weeks : d.weeks.filter((w) => w.week === focus);
-  const ovrCount = Object.keys(c.overrides || {}).length;
+  const ovrCount = effectiveOverrideCount();
   const filters = `<div class="filters">
       <span class="stepper"><button data-act="week-step" data-dir="-1">−</button><span>W${focus}</span><button data-act="week-step" data-dir="1">+</button></span>
       <button class="ftog" data-act="sched-week" data-mode="focus" aria-pressed="${mode === 'focus'}">Week</button><button class="ftog" data-act="sched-week" data-mode="all" aria-pressed="${mode === 'all'}">All weeks</button>
@@ -356,7 +357,8 @@ function pickSquares(g, code) {
 }
 function scheduleRow(g) {
   const live = g.status === 'in_progress', final = g.status === 'final';
-  const ovr = g.override;
+  const ovr = g.source === 'override' ? g.override : null;
+  const stale = !!(g.override && !ovr);
   const favHome = g.pHome >= 0.5; const fav = favHome ? g.home : g.away; const favP = favHome ? g.pHome : 1 - g.pHome;
   let kick = g.timeValid === false ? '<span class="faint">TBD</span>' : esc(fmtKick(g.kickoff));
   if (live) kick = `<span class="live"><span class="dot"></span>${esc(g.statusDetail || 'LIVE')}</span>`;
@@ -373,7 +375,7 @@ function scheduleRow(g) {
   else win = `<span class="code">${esc(fav)}</span> ${fig(favP, 'xs', 'win', { title: `${fav} ${pct(favP)} · raw ${pct(favHome ? g.pHomeRaw : 1 - g.pHomeRaw)} · ${srcLabel(g.source)}` })}`;
   const src = ovr ? 'manual' : g.source === 'moneyline' ? 'book' : g.source === 'spread' ? 'spread' : g.source === 'rating' ? 'model' : g.source;
   const disabled = live || final || g.status === 'postponed';
-  const seg = `<span class="seg"><button data-act="override" data-game="${esc(g.id)}" data-side="away" aria-pressed="${ovr === 'away'}" ${disabled ? 'disabled' : ''} title="Force ${esc(g.away)} to win">Awy</button><button data-act="override" data-game="${esc(g.id)}" data-side="" aria-pressed="${!ovr}" ${disabled ? 'disabled' : ''} title="No override">—</button><button data-act="override" data-game="${esc(g.id)}" data-side="home" aria-pressed="${ovr === 'home'}" ${disabled ? 'disabled' : ''} title="Force ${esc(g.home)} to win">Hom</button></span>`;
+  const seg = `<span class="seg"><button data-act="override" data-game="${esc(g.id)}" data-side="away" aria-pressed="${ovr === 'away'}" ${disabled ? 'disabled' : ''} title="Force ${esc(g.away)} to win">Awy</button><button data-act="override" data-game="${esc(g.id)}" data-side="" aria-pressed="${!g.override}" ${disabled && !stale ? 'disabled' : ''} title="${stale ? 'Clear the ignored what-if' : 'No override'}">—</button><button data-act="override" data-game="${esc(g.id)}" data-side="home" aria-pressed="${ovr === 'home'}" ${disabled ? 'disabled' : ''} title="Force ${esc(g.home)} to win">Hom</button></span>`;
   const teamCell = (code) => `${pickSquares(g, code)}<a class="code" href="#/teams/${esc(code)}">${esc(code)}</a> <span class="team-name">${esc(teamCity(code))}</span>`;
   const spread = g.spread == null ? '—' : g.spread === 0 ? 'PK' : minus(String(-g.spread));
   return `<tr class="${live ? 'live' : ''} ${final ? 'final' : ''} ${ovr ? 'override' : ''}"><td class="data">${kick}${g.neutral ? ' <span class="data-s muted">N</span>' : ''}</td><td>${teamCell(g.away)}</td><td class="muted">@</td><td>${teamCell(g.home)}</td><td class="num data">${spread}</td><td class="num data">${ml(g.awayMoneyline)} / ${ml(g.homeMoneyline)}</td><td>${win}</td><td class="data-s muted">${esc(src)}</td><td>${score}</td><td>${(g.picks || []).map((p) => `<span class="pick-sq ${entryClass(p.entry)} ${isLocked(p.entry, g.week, [p.team]) ? 'locked' : ''}" title="${esc(p.entry)} on ${esc(p.team)}">${esc(p.entry)}</span>`).join('')}</td><td>${seg}</td></tr>`;
@@ -385,6 +387,7 @@ function viewTeams() {
   const codes = Object.keys(d.teams).sort();
   const code = codes.includes(S.route.team) ? S.route.team : ((d.entries[0] && d.entries[0].plan && d.entries[0].plan[0] && d.entries[0].plan[0].teams[0]) || codes[0]);
   const t = d.teams[code];
+  t.schedule = t.schedule || []; t.stats = t.stats || {}; t.injuries = t.injuries || [];
   const opts = codes.map((k) => `<option value="${k}" ${k === code ? 'selected' : ''}>${esc(d.teams[k].displayName || d.teams[k].name)}</option>`).join('');
   const bye = (t.schedule.find((s) => s.bye) || {}).week;
   const next = t.schedule.find((s) => !s.bye && s.week >= cw && s.status !== 'final');
@@ -464,7 +467,7 @@ function viewNews() {
   const codes = Object.keys(d.teams).sort();
   const filters = `<div class="filters">${[['all', 'All'], ['mine', 'My teams this week'], ['injury', 'Injuries'], ['transaction', 'Transactions']].map(([m, l]) => `<button class="ftog" data-act="news-filter" data-mode="${m}" aria-pressed="${S.ui.newsFilter === m}">${l}</button>`).join('')}
       <label class="ctl"><span class="k">Team</span><span class="sel"><select data-act="news-team"><option value="">all</option>${codes.map((k) => `<option value="${k}" ${S.ui.newsTeam === k ? 'selected' : ''}>${k}</option>`).join('')}</select></span></label>
-      <span class="spacer"></span><span class="data-s muted">ESPN · ${d.news.length} items · fetched ${rel((d.meta.dataAge || {}).news)} ago</span></div>`;
+      <span class="spacer"></span><span class="data-s muted">ESPN · ${d.news.length} items · fetched ${relShort((d.meta.dataAge || {}).news) || 'never'}</span></div>`;
   return `<div class="view-head"><div><div class="folio">News</div><div class="sub">headlines tagged by team; injury items flagged by keyword</div></div></div>${filters}
     <div style="max-width:1040px">${items.length ? items.map(newsRow).join('') : emptyBlock('Nothing here.', 'No headlines match the current filter.')}</div>`;
 }

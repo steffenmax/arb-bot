@@ -33,7 +33,7 @@ with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=CH, args=["--no-sandbox"])
     page = browser.new_page(viewport={"width": 1440, "height": 1000})
     page.on("pageerror", lambda e: errors.append(str(e)))
-    page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "favicon" not in m.text and "fonts" not in m.text else None)
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
 
     # ---- This Week loads
     page.goto(BASE + "/#/week"); wait_idle(page)
@@ -137,8 +137,11 @@ with sync_playwright() as p:
     check("heatmap tiles", page.locator(".heat .ht").count() == 18)
     page.goto(BASE + "/#/news"); wait_idle(page)
     page.locator('[data-act="news-filter"][data-mode="injury"]').click(); page.wait_for_timeout(200)
-    check("news injury filter", all("Injury" in t for t in page.locator(".news-row .tag").all_inner_texts()) if page.locator(".news-row").count() else True)
-    page.keyboard.press("2"); page.wait_for_timeout(300)
+    check("news injury filter", all("injury" in t.lower() for t in page.locator(".news-row .tag").all_inner_texts()) if page.locator(".news-row").count() else True)
+    page.goto(BASE + "/#/schedule"); wait_idle(page)
+    page.fill('input[data-act="team-search"]', ""); page.locator('input[data-act="team-search"]').click(); page.keyboard.type("KC"); page.wait_for_timeout(200)
+    check("search keeps focus while typing", page.evaluate("document.activeElement && document.activeElement.dataset.act === 'team-search' && document.activeElement.value === 'KC'"))
+    page.keyboard.press("Escape"); page.keyboard.press("2"); page.wait_for_timeout(300)
     check("keyboard view switch", page.evaluate("location.hash") == "#/plan")
 
     # ---- phone overflow

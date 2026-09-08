@@ -358,7 +358,7 @@ function onAction(act, el, ev) {
     case 'week-step': { const cur = S.ui.focusWeek || d.meta.currentWeek; const nw = clamp(cur + Number(el.dataset.dir), 1, d.meta.weeksInSeason); S.ui.focusWeek = nw; if (S.route.view === 'branches') { go(`#/branches/${S.route.entry}/${nw}`); return; } S.ui.scheduleWeek = 'focus'; renderAll(); break; }
     case 'sched-week': S.ui.scheduleWeek = el.dataset.mode; renderView(); break;
     case 'sched-filter': S.ui.scheduleFilter = el.dataset.mode; renderView(); break;
-    case 'team-search': S.ui.teamSearch = el.value.trim().toUpperCase(); renderView(); break;
+    case 'team-search': { S.ui.teamSearch = el.value.trim().toUpperCase(); const box = $('#sched-ledger'); if (box && typeof scheduleLedger === 'function') box.innerHTML = scheduleLedger(); else renderView(); break; }
     case 'sort': S.ui.sort = el.value; renderView(); break;
     case 'hide-low': S.ui.hideLow = !S.ui.hideLow; renderView(); break;
     case 'show-excluded': S.ui.showExcluded = !S.ui.showExcluded; renderView(); break;

@@ -325,6 +325,13 @@ function viewSchedule() {
       <span class="spacer"></span>
       ${ovrCount ? `<span class="plum">${ovrCount} what-if${ovrCount === 1 ? '' : 's'}</span><button class="text-btn danger" data-act="clear-overrides">Clear all</button>` : '<span class="muted">What-if: assume a result. The game counts as decided, so only an entry that locked it can still hold that team.</span>'}
     </div>`;
+  return `<div class="view-head"><div><div class="folio">Schedule</div><div class="sub">every game · lines, probabilities, scores and your picks</div></div></div>${filters}
+    <div id="sched-ledger">${scheduleLedger()}</div>`;
+}
+function scheduleLedger() {
+  const d = S.dash, cw = d.meta.currentWeek;
+  const focus = S.ui.focusWeek || cw;
+  const weeks = S.ui.scheduleWeek === 'all' ? d.weeks : d.weeks.filter((w) => w.week === focus);
   const groups = weeks.map((w) => {
     let games = w.gameIds.map(game).filter(Boolean);
     if (S.ui.scheduleFilter === 'picks') games = games.filter((g) => g.picks && g.picks.length);
@@ -337,8 +344,7 @@ function viewSchedule() {
     const rows = games.map(scheduleRow).join('') || `<tr><td colspan="12" class="muted">No games match.</td></tr>`;
     return head + rows;
   }).join('');
-  return `<div class="view-head"><div><div class="folio">Schedule</div><div class="sub">every game · lines, probabilities, scores and your picks</div></div></div>${filters}
-    <div class="ledger-wrap"><table class="ledger"><colgroup><col style="width:104px"><col style="width:190px"><col style="width:24px"><col style="width:190px"><col style="width:72px"><col style="width:120px"><col style="width:120px"><col style="width:64px"><col style="width:150px"><col style="width:80px"><col style="width:120px"></colgroup>
+  return `<div class="ledger-wrap"><table class="ledger"><colgroup><col style="width:104px"><col style="width:190px"><col style="width:24px"><col style="width:190px"><col style="width:72px"><col style="width:120px"><col style="width:120px"><col style="width:64px"><col style="width:150px"><col style="width:80px"><col style="width:120px"></colgroup>
       <thead><tr><th>Kickoff</th><th>Away</th><th></th><th>Home</th><th class="num">Spread</th><th class="num">ML A / ML H</th><th>Win % (fav)</th><th>Src</th><th>Score / status</th><th>Picks</th><th>What-if</th></tr></thead><tbody>${groups}</tbody></table></div>`;
 }
 function pickSquares(g, code) {

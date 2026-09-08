@@ -163,5 +163,15 @@ python3 -m survivor [--season Y] [--week N] [--end-week N] [--entries N]
 ## Tests
 
 ```bash
-python3 -m unittest discover -s survivor/tests -t .
+python3 -m unittest discover -s survivor/tests -t .      # engine, feeds, config
+
+# Browser test against a running dashboard (needs: pip install playwright,
+# and a Chromium binary; edit CH in the script if yours lives elsewhere)
+python3 -m survivor.dashboard --port 8765 &
+python3 survivor/tests/e2e_dashboard.py
 ```
+
+The browser test drives the real page through locks, undo, two-pick
+toggles, the branch drawer, what-if overrides, the entries and crowd
+editors, routing and phone layouts. It resets the saved config to three
+empty entries when it finishes.

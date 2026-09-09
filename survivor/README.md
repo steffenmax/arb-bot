@@ -8,18 +8,32 @@ favorite. Ships as a command-line tool and a local web dashboard.
 ## Quick start
 
 ```bash
-pip install -r survivor/requirements.txt
+./survivor/start.sh
+```
 
-# Dashboard (opens on http://127.0.0.1:8765)
+That is the whole thing. The script installs the three Python packages it
+needs into `survivor/.venv` the first time, picks the first free port from
+8765, starts the server and opens your browser. Press Ctrl+C to stop it.
+
+```bash
+./survivor/start.sh --port 9000     # a specific port
+./survivor/start.sh --no-open       # do not open a browser
+```
+
+If you would rather manage the environment yourself:
+
+```bash
+pip install -r survivor/requirements.txt
 python3 -m survivor.dashboard --open
 
-# Command line
+# Command line, no browser
 python3 -m survivor --end-week 10
 python3 -m survivor --end-week 10 --used A=LAC --used B=JAX --used C=DET   # week 2
 ```
 
 No API keys are needed. Everything comes from public feeds and is cached
-under `survivor/cache/`.
+under `survivor/cache/`. Your entries, locks and settings are saved in
+`survivor/cache/config.json`, so the dashboard picks up where you left off.
 
 ## Dashboard
 

@@ -117,7 +117,7 @@ function heroCard(e) {
   return `<div class="hero ${ec} ${locked ? 'locked' : ''} ${two ? 'two' : ''}">
     <div class="kicker label"><span>Entry ${esc(e.name)}<span class="state">${state}</span></span><span class="used">${usedTxt}</span></div>
     ${body}
-    <div class="bottom"><span>Survives to W${H} ${fig(e.pHorizon, 'xs', 'survival')}</span>
+    <div class="bottom"><span>Survives to W${H} ${fig(e.pHorizon, 'xs', 'survival', { inline: true })}</span>
       <div class="actions">${locked ? `<button class="text-btn" data-act="unlock" data-entry="${esc(e.name)}" data-week="${cw}">■ Locked · Unlock</button>` : `<button class="text-btn" data-act="lock" data-entry="${esc(e.name)}" data-week="${cw}" data-teams="${esc(teamsAttr)}">Lock pick</button>`}
         <a class="text-btn" href="#/branches/${esc(e.name)}/${cw}">Branches →</a></div></div></div>`;
 }
@@ -206,7 +206,7 @@ function viewPlan() {
   const entries = d.entries;
   const locks = c.entries.reduce((n, e) => n + Object.keys(e.locks || {}).length, 0);
   const ovr = effectiveOverrideCount();
-  const head = `<div class="head"><span class="label">Week</span></div><div class="head"><span class="label">2×</span></div>` +
+  const head = `<div class="head"><span class="label"><span class="long">Week</span><span class="short">Wk</span></span></div><div class="head"><span class="label">2×</span></div>` +
     entries.map((e) => `<div class="head entry ${entryClass(e.name)}"><span class="label">Entry ${esc(e.name)}${e.alive ? '' : ' · out'}</span></div>`).join('') +
     `<div class="head joint"><span class="label">Joint → W${H}</span></div>`;
   const drawer = S.ui.drawer && S.ui.drawer.type === 'branches' ? S.ui.drawer : null;
@@ -236,14 +236,14 @@ function viewPlan() {
       }
       return `<div class="cell ${ec} ${p.locked ? 'locked' : ''} ${p.teams.length > 1 ? 'two' : ''} ${ov ? 'override' : ''} ${sel ? 'selected' : ''}" data-act="open-branches" data-entry="${esc(e.name)}" data-week="${wk}" role="gridcell" tabindex="0">${inner}${ov ? '<span class="ovr">OVR</span>' : ''}<span class="hint">→ Branches</span></div>`;
     }).join('');
-    const jc = ji >= 0 ? `<div class="jointcell"><span>≥1 ${fig(j.curveAny[ji], 'xs', 'survival')}</span><span>all ${fig(j.curveAll[ji], 'xs', 'survival')}</span></div>` : `<div class="jointcell"></div>`;
+    const jc = ji >= 0 ? `<div class="jointcell"><span>≥1 ${fig(j.curveAny[ji], 'xs', 'survival', { inline: true })}</span><span>all ${fig(j.curveAll[ji], 'xs', 'survival', { inline: true })}</span></div>` : `<div class="jointcell"></div>`;
     const cur = wk === cw ? ' cur' : '';
     return [wkCell, tog, cells, jc].join('').replace(/<div class="/g, `<div class="${cur.trim()} `);
   }).join('');
   const sub = `Objective ${OBJECTIVES[c.objective]} · horizon W${H} · decay ${Math.exp(-c.decay).toFixed(2)} · contrarian ${Number(c.contrarianWeight).toFixed(2)} · hedge ${c.hedge} · ${locks} lock${locks === 1 ? '' : 's'} · ${ovr} what-if${ovr === 1 ? '' : 's'}`;
   return `<div class="view-head"><div><div class="folio">Season plan</div><div class="sub">${esc(sub)}</div></div>
-      <div class="tools"><span>≥1 → W${H} ${fig(j.pAny, 's', 'survival')}</span><span>all → W${H} ${fig(j.pAll, 's', 'survival')}</span></div></div>
-    <div class="plangrid" style="--n:${entries.length}" role="grid">${head}${rows}</div>
+      <div class="tools"><span>≥1 → W${H} ${fig(j.pAny, 's', 'survival', { inline: true })}</span><span>all → W${H} ${fig(j.pAll, 's', 'survival', { inline: true })}</span></div></div>
+    <div class="plan-scroll"><div class="plangrid" style="--n:${entries.length}" role="grid">${head}${rows}</div></div>
     <p class="small muted" style="margin:12px 0 0">Click a cell to see every alternative pick for that entry and week with its re-optimized path. Locked cells are solid ink. Later weeks are a forecast and are re-planned every run.</p>`;
 }
 
@@ -371,8 +371,8 @@ function scheduleRow(g) {
   } else if (g.headline) score = `<span class="small muted">${esc(g.headline)}</span>`;
   let win;
   if (final) { const winner = g.homeScore > g.awayScore ? g.home : g.awayScore > g.homeScore ? g.away : null; win = winner ? `<span class="code">${esc(winner)}</span> <span class="tag">W</span>` : '<span class="tag">Tie</span>'; }
-  else if (ovr) win = `<span class="code plum">${esc(ovr === 'home' ? g.home : g.away)} ↑</span> ${fig(1, 'xs', 'win', { tone: 'tone-override', decimals: 0 })}`;
-  else win = `<span class="code">${esc(fav)}</span> ${fig(favP, 'xs', 'win', { title: `${fav} ${pct(favP)} · raw ${pct(favHome ? g.pHomeRaw : 1 - g.pHomeRaw)} · ${srcLabel(g.source)}` })}`;
+  else if (ovr) win = `<span class="wincell"><span class="code plum">${esc(ovr === 'home' ? g.home : g.away)} ↑</span>${fig(1, 'xs', 'win', { tone: 'tone-override', decimals: 0 })}</span>`;
+  else win = `<span class="wincell"><span class="code">${esc(fav)}</span>${fig(favP, 'xs', 'win', { title: `${fav} ${pct(favP)} · raw ${pct(favHome ? g.pHomeRaw : 1 - g.pHomeRaw)} · ${srcLabel(g.source)}` })}</span>`;
   const src = ovr ? 'manual' : g.source === 'moneyline' ? 'book' : g.source === 'spread' ? 'spread' : g.source === 'rating' ? 'model' : g.source;
   const disabled = live || final || g.status === 'postponed';
   const seg = `<span class="seg"><button data-act="override" data-game="${esc(g.id)}" data-side="away" aria-pressed="${ovr === 'away'}" ${disabled ? 'disabled' : ''} title="Force ${esc(g.away)} to win">Awy</button><button data-act="override" data-game="${esc(g.id)}" data-side="" aria-pressed="${!g.override}" ${disabled && !stale ? 'disabled' : ''} title="${stale ? 'Clear the ignored what-if' : 'No override'}">—</button><button data-act="override" data-game="${esc(g.id)}" data-side="home" aria-pressed="${ovr === 'home'}" ${disabled ? 'disabled' : ''} title="Force ${esc(g.home)} to win">Hom</button></span>`;

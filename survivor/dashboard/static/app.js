@@ -36,7 +36,7 @@ function tone(v, kind = 'win') {
 }
 /* The Ruled Figure: a serif numeral with a rule beneath whose length is the value. */
 function fig(v, size = 's', kind = 'win', opts = {}) {
-  const cls = ['fig', 'fig-' + size, opts.tone || tone(v, kind), opts.inverse ? 'inverse' : '', opts.plain ? 'plain' : '', v == null ? 'dim' : ''].filter(Boolean).join(' ');
+  const cls = ['fig', 'fig-' + size, opts.tone || tone(v, kind), opts.inverse ? 'inverse' : '', opts.plain ? 'plain' : '', opts.inline ? 'inline' : '', v == null ? 'dim' : ''].filter(Boolean).join(' ');
   const val = v == null ? '—' : pct(v, opts.decimals ?? 1);
   const sup = opts.sup ? '<sup>%</sup>' : '';
   const title = opts.title ? ` title="${esc(opts.title)}"` : '';

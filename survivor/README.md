@@ -162,6 +162,35 @@ python3 -m survivor [--season Y] [--week N] [--end-week N] [--entries N]
                     [--objective any|final|expected] [--refresh] [--show-paths]
 ```
 
+## If something goes wrong
+
+The launcher checks the server and builds the plan once before opening your
+browser, so most problems are printed in the terminal rather than left for
+the page to discover.
+
+**"certificate verify failed" / "Backend unreachable".** Python installed
+from python.org on macOS does not read the system keychain, so every
+download fails until its certificate store is populated. The downloader
+handles this by falling back to `certifi`, which `start.sh` installs. If you
+run the modules directly and still see it, either `pip install certifi` or
+run the installer that ships with Python:
+
+```bash
+open "/Applications/Python 3.12/Install Certificates.command"   # your version
+```
+
+**Behind a corporate proxy.** Point `SSL_CERT_FILE` at your organization's
+CA bundle before starting; it takes precedence over everything else.
+
+**The page keeps saying the backend is unreachable.** Check the terminal
+running `start.sh` is still alive, and that the port in your browser's
+address bar matches the one it printed. A second launch picks a different
+port, so an old tab will point at a dead one.
+
+**Stale or missing data.** Delete `survivor/cache/` and start again. Your
+entries and settings live in `survivor/cache/config.json`, so copy that
+first if you want to keep them.
+
 ## Limits
 
 * Lines are treated as truth; the tool does not shop books or blend

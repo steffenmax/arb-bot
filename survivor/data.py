@@ -10,9 +10,10 @@ from __future__ import annotations
 import datetime as dt
 import os
 import time
-import urllib.request
 
 import pandas as pd
+
+from . import net
 
 GAMES_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
@@ -63,8 +64,11 @@ def load_games(refresh: bool = False, cache_file: str = CACHE_FILE) -> pd.DataFr
     if stale or refresh:
         os.makedirs(os.path.dirname(cache_file), exist_ok=True)
         try:
-            urllib.request.urlretrieve(GAMES_URL, cache_file + ".tmp")
-            os.replace(cache_file + ".tmp", cache_file)
+            body = net.get(GAMES_URL)
+            tmp = f"{cache_file}.{os.getpid()}.tmp"
+            with open(tmp, "wb") as fh:
+                fh.write(body)
+            os.replace(tmp, cache_file)
         except Exception as exc:  # noqa: BLE001 - fall back to a stale cache
             if not os.path.exists(cache_file):
                 raise RuntimeError(f"Could not download {GAMES_URL}: {exc}") from exc

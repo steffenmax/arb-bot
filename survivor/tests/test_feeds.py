@@ -1,10 +1,14 @@
 """Parser, config and injury-model tests (no network)."""
 import unittest
 
+import ssl
+import urllib.error
+from unittest import mock
+
 import numpy as np
 import pandas as pd
 
-from survivor import espn, probs
+from survivor import espn, net, probs
 from survivor.dashboard import config
 from survivor.dashboard.service import sanitize
 from survivor.injuries import Injury, team_impact
@@ -145,3 +149,67 @@ class SanitizeTests(unittest.TestCase):
         self.assertIsNone(out["d"][1])
         self.assertTrue(out["d"][2].startswith("2026-09-09"))
         self.assertIsNone(out["e"])
+
+
+class CertStoreFallbackTests(unittest.TestCase):
+    """A stock macOS Python has an empty certificate store; downloads must still
+    work by falling through to certifi's bundle."""
+
+    def setUp(self):
+        self.saved = (net._CANDIDATES, dict(net._BUILT), net._WORKING)
+        self.bad = ssl.create_default_context()
+        self.good = ssl.create_default_context()
+        net._CANDIDATES = [("bad", lambda: self.bad), ("good", lambda: self.good)]
+        net._BUILT, net._WORKING = {}, 0
+
+    def tearDown(self):
+        net._CANDIDATES, net._BUILT, net._WORKING = self.saved
+
+    def fake_urlopen(self, verdicts):
+        class Resp:
+            def __enter__(s): return s
+            def __exit__(s, *a): return False
+            def read(s): return b"payload"
+
+        def opener(req, timeout=None, context=None):
+            outcome = verdicts[self.good if context is self.good else self.bad]
+            if outcome is not None:
+                raise outcome
+            return Resp()
+        return opener
+
+    def test_falls_through_to_a_store_that_verifies(self):
+        verify_failed = urllib.error.URLError(
+            ssl.SSLCertVerificationError("[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed"))
+        with mock.patch.object(net.urllib.request, "urlopen",
+                               self.fake_urlopen({self.bad: verify_failed, self.good: None})):
+            self.assertEqual(net.get("https://example.test/games.csv"), b"payload")
+            self.assertEqual(net.cert_store(), "good")
+            # the working store is remembered, so later calls do not retry the bad one
+            self.assertEqual(net.get("https://example.test/other.csv"), b"payload")
+            self.assertEqual(net._WORKING, 1)
+
+    def test_a_404_is_not_treated_as_a_certificate_problem(self):
+        http_error = urllib.error.HTTPError("https://example.test/x", 404, "Not Found", {}, None)
+        with mock.patch.object(net.urllib.request, "urlopen",
+                               self.fake_urlopen({self.bad: http_error, self.good: None})):
+            with self.assertRaises(urllib.error.HTTPError):
+                net.get("https://example.test/x")
+            self.assertEqual(net._WORKING, 0)      # no fallback consumed
+
+    def test_every_store_failing_explains_the_fix(self):
+        verify_failed = urllib.error.URLError(
+            ssl.SSLCertVerificationError("[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed"))
+        with mock.patch.object(net.urllib.request, "urlopen",
+                               self.fake_urlopen({self.bad: verify_failed, self.good: verify_failed})):
+            with self.assertRaises(RuntimeError) as caught:
+                net.get("https://example.test/x")
+        self.assertIn("pip install certifi", str(caught.exception))
+        self.assertIn("Install Certificates.command", str(caught.exception))
+
+    def test_env_bundle_takes_precedence_when_present(self):
+        net._CANDIDATES = None
+        with mock.patch.dict(net.os.environ, {"SSL_CERT_FILE": __file__}, clear=False):
+            names = [n for n, _ in net._all()]
+        self.assertEqual(names[0], "SSL_CERT_FILE")
+        self.assertEqual(names[-1], "certifi")

@@ -6,12 +6,12 @@ import json
 import os
 import threading
 import time
-import urllib.request
 
+from . import net
 from .data import CACHE_DIR
 
-USER_AGENT = "survivor-dashboard/1.0 (+https://github.com/steffenmax/arb-bot)"
-TIMEOUT = 25
+USER_AGENT = net.USER_AGENT
+TIMEOUT = net.TIMEOUT
 
 
 class FetchResult:
@@ -47,9 +47,7 @@ def _memo_put(name: str, mtime: float, value) -> None:
 
 
 def http_get(url: str, headers: dict | None = None) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, **(headers or {})})
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-        return resp.read()
+    return net.get(url, headers)
 
 
 def cached_fetch(url: str, name: str, ttl: float, refresh: bool = False,

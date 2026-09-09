@@ -109,6 +109,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(404, {"error": "not found"})
         except cfgmod.ConfigError as exc:
             self._json(400, {"error": str(exc)})
+        except RuntimeError as exc:
+            # A data feed is unreachable. Expected, and the message already
+            # says what to do, so report it in one line rather than a dump.
+            print(f"survivor: {exc}", file=sys.stderr)
+            self._json(503, {"error": str(exc)})
         except Exception as exc:  # noqa: BLE001 - surface to the UI
             traceback.print_exc()
             self._json(500, {"error": f"{type(exc).__name__}: {exc}"})

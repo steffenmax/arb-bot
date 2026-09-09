@@ -91,9 +91,21 @@ function isWide() { return window.innerWidth >= 1024; }
 
 /* ---------------------------------------------------------------- API */
 async function api(method, path, body) {
-  const r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  let r;
+  try {
+    r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  } catch (e) {
+    const err = new Error(`No answer from ${location.origin}`);
+    err.kind = 'offline';
+    throw err;
+  }
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || `${r.status} ${r.statusText}`);
+  if (!r.ok) {
+    const err = new Error(j.error || `${r.status} ${r.statusText}`);
+    err.kind = r.status === 503 ? 'data' : 'server';
+    err.status = r.status;
+    throw err;
+  }
   return j;
 }
 async function loadConfig() {
@@ -101,7 +113,9 @@ async function loadConfig() {
   S.config = await api('GET', '/api/config');
 }
 let runTimer = null;
+let retryTimer = null, retryDelay = 0;
 function scheduleRun(opts) { clearTimeout(runTimer); S.pending = true; runTimer = setTimeout(() => run(opts), 300); }
+function cancelRetry() { clearTimeout(retryTimer); retryTimer = null; retryDelay = 0; S.retryIn = null; }
 async function run(opts = {}) {
   clearTimeout(runTimer);
   S.pending = false;
@@ -114,16 +128,26 @@ async function run(opts = {}) {
     } else {
       d = await api('POST', '/api/dashboard', S.config);
     }
+    cancelRetry();
     S.prevJoint = S.dash ? S.dash.joint : null;
-    S.dash = d; S.lastGood = d; S.error = null;
+    S.dash = d; S.lastGood = d; S.error = null; S.errorKind = null;
     S.config = JSON.parse(JSON.stringify(d.config));
     indexDash();
     if (!S.mock && opts.save !== false) await api('PUT', '/api/config', S.config).catch(() => {});
     if (opts.toast) toast(opts.toast.msg, opts.toast.undo);
   } catch (e) {
     S.error = e.message || String(e);
+    S.errorKind = e.kind || 'server';
     if (opts.revert) { S.config = opts.revert; toast(`Change rejected: ${S.error}`); }
     if (!S.dash && S.lastGood) S.dash = S.lastGood;
+    // A missing server or unreachable feed usually fixes itself, so keep
+    // trying with a widening gap instead of stranding the page.
+    if (!S.dash && S.errorKind !== 'server') {
+      retryDelay = Math.min(retryDelay ? retryDelay * 2 : 2000, 15000);
+      S.retryIn = Math.round(retryDelay / 1000);
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(() => run({ save: false }), retryDelay);
+    }
   }
   S.loading = false;
   renderAll();
@@ -338,6 +362,7 @@ function onAction(act, el, ev) {
     case 'refresh': refreshData(); break;
     case 'density': { const on = document.documentElement.dataset.density !== 'compact'; document.documentElement.dataset.density = on ? 'compact' : ''; try { localStorage.setItem('density', on ? 'compact' : ''); } catch (e) {} renderMasthead(); break; }
     case 'theme': { const on = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = on ? 'dark' : ''; try { localStorage.setItem('theme', on ? 'dark' : ''); } catch (e) {} renderMasthead(); break; }
+    case 'retry': cancelRetry(); run({ save: false }); break;
     case 'undo': if (S.undo) { const u = S.undo; S.undo = null; $('#toast').hidden = true; u(); } break;
     case 'toast-close': $('#toast').hidden = true; break;
     case 'dismiss-banner': S.ui.dismissedBanner = el.dataset.key; renderBanner(); break;

@@ -5,7 +5,7 @@ function renderView() {
   const el = $('#view');
   el.classList.toggle('wide', ['schedule', 'teams'].includes(S.route.view));
   if (!S.dash) {
-    el.innerHTML = S.error ? errorBlock('Backend unreachable', S.error) : `<div class="view-head"><div><div class="folio">Survivor</div><div class="sub">loading plan…</div></div></div>`;
+    el.innerHTML = S.error ? startupError() : `<div class="view-head"><div><div class="folio">Survivor</div><div class="sub">loading the plan — the first run downloads about 15 MB…</div></div></div>`;
     return;
   }
   let html = '';
@@ -21,6 +21,20 @@ function renderView() {
   afterRender();
 }
 
+function startupError() {
+  const kind = S.errorKind || 'server';
+  const heading = { offline: 'The dashboard server is not answering', data: 'Cannot download the NFL data', server: 'The server hit an error' }[kind];
+  const advice = {
+    offline: `Check the terminal you ran <code>./survivor/start.sh</code> in — it may have stopped, or be serving a different port than ${esc(location.origin)}.`,
+    data: 'This is almost always no internet access to github.com or espn.com. Fix the connection and this page recovers on its own. If it mentions a certificate, run <code>pip install certifi</code> and start again.',
+    server: 'This one is a bug rather than your setup. The terminal running the server has the full traceback.',
+  }[kind];
+  const retry = S.retryIn ? `<p class="small muted">Retrying automatically, next attempt in ${S.retryIn}s.</p>` : '';
+  return `<div class="view-head"><div><div class="folio">Not ready</div><div class="sub">talking to ${esc(location.origin)}</div></div></div>
+    <div class="errblock"><span class="strong">${esc(heading)}</span><span class="detail">${esc(S.error || '')}</span>
+      <p class="small" style="max-width:68ch;margin:8px 0">${advice}</p>${retry}
+      <button class="text-btn" data-act="retry">Try again now</button></div>`;
+}
 function errorBlock(title, detail) {
   return `<div class="errblock"><span class="strong">${esc(title)}</span><span class="detail">${esc(detail || '')}</span> <button class="text-btn" data-act="refresh">Retry</button></div>`;
 }

@@ -446,28 +446,45 @@ def hedge_penalty(table: ProbTable, other_paths: list[Path], strength: float) ->
     return pen
 
 
+MIN_SURVIVING_SHARE = 0.02     # nobody is ever really the last one standing
+DEFAULT_UNKNOWN_WIN_RATE = 0.65
+
+
 def contrarian_bonus(
     table: ProbTable,
     pick_pct: dict[str, float],
+    min_share: float = MIN_SURVIVING_SHARE,
 ) -> dict[str, float]:
     """log(1 / expected surviving share of the pool) given you pick each team.
 
-    If you pick team t and it wins, everyone else on t also survives, and the
-    rest of the pool survives at their own teams' rates. A smaller surviving
-    share means a bigger slice of the pot, so the bonus rewards picks the
-    crowd is avoiding. Teams missing from pick_pct are treated as 0%.
+    If you pick team t and it wins, everyone else on t survives too, everyone
+    on t's opponent is knocked out, and the rest survive at their own teams'
+    rates. A smaller surviving share means a bigger slice of the pot, so the
+    bonus rewards picks the crowd is avoiding.
+
+    Percentages are read literally: 30% on one team means 30% of the pool is
+    on it and the other 70% is spread over teams you did not list. Scaling the
+    entered numbers up to 100% instead would treat a single entered team as
+    the whole pool, and its opponent would look like a win-the-whole-pot play
+    however unlikely it was to win. The floor on the surviving share keeps a
+    near-empty pool from producing an unbounded bonus.
     """
     probs = {t: table.prob[0, j] for j, t in enumerate(table.teams) if not np.isnan(table.prob[0, j])}
-    total = sum(pick_pct.values())
-    share = {t: pick_pct.get(t, 0.0) / total for t in probs} if total > 0 else {t: 0.0 for t in probs}
-    others = sum(share[t] * probs[t] for t in probs)
+    share = {t: max(0.0, float(pick_pct.get(t, 0.0))) / 100.0 for t in probs}
+    known = sum(share.values())
+    if known > 1.0:                  # entered as shares of the listed teams only
+        share = {t: s / known for t, s in share.items()}
+        known = 1.0
+    unknown = max(0.0, 1.0 - known)
+    # The part of the pool you did not list survives at about the rate of the
+    # teams people do pick.
+    p_bar = (sum(share[t] * probs[t] for t in probs) / known) if known > 1e-9 else DEFAULT_UNKNOWN_WIN_RATE
     bonus = {}
-    for t, p in probs.items():
-        j = table.team_index(t)
-        opp = table.opponent[0, j]
-        opp_term = share.get(opp, 0.0) * probs.get(opp, 0.0)
-        surviving = share[t] + (others - share[t] * p - opp_term)
-        bonus[t] = -math.log(max(surviving, 1e-6))
+    for t in probs:
+        opp = table.opponent[0, table.team_index(t)]
+        others = sum(share[o] * probs[o] for o in probs if o not in (t, opp))
+        surviving = share[t] + others + unknown * p_bar
+        bonus[t] = -math.log(max(surviving, min_share))
     return bonus
 
 

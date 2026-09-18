@@ -269,6 +269,25 @@ class JointTests(unittest.TestCase):
         # Picking A: A's backers survive plus C's at 0.75.
         self.assertAlmostEqual(math.exp(-bonus["A"]), 0.7 + 0.3 * 0.75)
 
+    def test_partial_crowd_data_is_not_scaled_up_to_the_whole_pool(self):
+        # 30% on A means 70% of the pool is elsewhere, not that A owns it all.
+        bonus = contrarian_bonus(self.table, {"A": 30})
+        # B is A's opponent: picking it knocks out A's backers, but the 70%
+        # you did not list still mostly survives, so the edge stays modest.
+        self.assertLess(bonus["B"], 2.0)
+        self.assertGreater(bonus["B"], bonus["A"])
+        # and it must not swamp a real difference in win probability
+        specs = [EntrySpec(n, set(), {}) for n in "AB"]
+        plan = plan_entries(self.table, specs, top_k=4, week0_bonus=bonus, contrarian_weight=1.0)
+        self.assertFalse(all(e.plan.first_teams == ["B"] for e in plan.entries),
+                         "every entry piled onto the 45% underdog")
+
+    def test_surviving_share_is_floored(self):
+        # One team owning the entire pool would otherwise give its opponent an
+        # unbounded bonus.
+        bonus = contrarian_bonus(self.table, {"A": 100})
+        self.assertAlmostEqual(bonus["B"], -math.log(0.02), places=6)
+
     def test_contrarian_weight_zero_disables_bonus(self):
         bonus = contrarian_bonus(self.table, {"A": 95, "C": 5})
         specs = [EntrySpec("A", set(), {})]

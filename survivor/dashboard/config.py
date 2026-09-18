@@ -13,9 +13,9 @@ CONFIG_FILE = os.path.join(data.CACHE_DIR, "config.json")
 DEFAULT_CONFIG = {
     "season": None,
     "entries": [
-        {"name": "A", "used": [], "locks": {}, "alive": True},
-        {"name": "B", "used": [], "locks": {}, "alive": True},
-        {"name": "C", "used": [], "locks": {}, "alive": True},
+        {"name": "A", "used": [], "picks": {}, "locks": {}, "alive": True, "eliminatedWeek": None},
+        {"name": "B", "used": [], "picks": {}, "locks": {}, "alive": True, "eliminatedWeek": None},
+        {"name": "C", "used": [], "picks": {}, "locks": {}, "alive": True, "eliminatedWeek": None},
     ],
     "picksPerWeek": {},
     "horizon": 18,
@@ -89,11 +89,32 @@ def normalize(raw: dict | None) -> dict:
             tl = _team_list(teams, f"entry {name} lock week {week}")
             if tl:
                 locks[str(week)] = tl
+        picks = {}
+        for wk, teams in (e.get("picks") or {}).items():
+            try:
+                week = int(wk)
+            except (TypeError, ValueError) as exc:
+                raise ConfigError(f"pick week '{wk}' is not a number") from exc
+            if not 1 <= week <= 18:
+                raise ConfigError(f"pick week {week} out of range")
+            tl = _team_list(teams, f"entry {name} pick week {week}")
+            if tl:
+                picks[str(week)] = tl
+        elim = e.get("eliminatedWeek")
+        if elim is not None:
+            try:
+                elim = int(elim)
+            except (TypeError, ValueError) as exc:
+                raise ConfigError("eliminatedWeek must be a week number") from exc
+            if not 1 <= elim <= 18:
+                raise ConfigError(f"eliminatedWeek {elim} out of range")
         clean_entries.append({
             "name": name,
             "used": _team_list(e.get("used"), f"entry {name} used"),
+            "picks": picks,
             "locks": locks,
             "alive": bool(e.get("alive", True)),
+            "eliminatedWeek": elim,
         })
     cfg["entries"] = clean_entries
 

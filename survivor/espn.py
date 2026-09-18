@@ -138,37 +138,57 @@ def parse_event(ev: dict) -> dict | None:
     }
 
 
-def fetch_scoreboard(season: int, refresh: bool = False, ttl: float = 300) -> FetchResult:
-    """All regular-season events for a season in one call, keyed by ESPN id.
+SETTLED_TTL = 7 * 86400          # a week whose games are done never changes
 
-    ESPN's regular season for year Y spans early September to mid January.
+
+def fetch_scoreboard(season: int, refresh: bool = False, ttl: float = 300,
+                     focus_week: int | None = None) -> FetchResult:
+    """All regular-season events for a season, keyed by ESPN id.
+
+    ESPN dropped support for the date-range form of this endpoint (it now
+    answers 400), so each week is fetched separately. Weeks around the one
+    being played use the live TTL; the rest are settled and cached for a week,
+    which keeps a refresh down to about three calls.
     """
-    url = f"{BASE}/site/v2/sports/football/nfl/scoreboard?dates={season}0901-{season + 1}0131&limit=1000"
-    res = cached_fetch(url, f"espn_scoreboard_{season}.json", ttl, refresh, parse=parse_json)
     events: dict[str, dict] = {}
     calendar: list[dict] = []
-    if res.data:
+    errors: list[str] = []
+    newest = 0.0
+    for week in range(1, 19):
+        live = focus_week is None or abs(week - focus_week) <= 1
+        res = cached_fetch(
+            f"{BASE}/site/v2/sports/football/nfl/scoreboard?seasontype=2&week={week}&dates={season}",
+            f"espn_scoreboard_{season}_w{week}.json",
+            ttl if live else SETTLED_TTL,
+            refresh and live,
+            parse=parse_json,
+        )
+        if res.error:
+            errors.append(f"week {week}: {res.error}")
+        newest = max(newest, res.fetched_at or 0.0)
+        if not res.data:
+            continue
         for ev in res.data.get("events") or []:
-            season_info = ev.get("season") or {}
-            if season_info.get("type") not in (None, 2):
-                continue
-            if season_info.get("year") not in (None, season):
+            info = ev.get("season") or {}
+            if info.get("type") not in (None, 2) or info.get("year") not in (None, season):
                 continue
             parsed = parse_event(ev)
             if parsed:
                 events[parsed["espnId"]] = parsed
-        for league in res.data.get("leagues") or []:
-            for section in league.get("calendar") or []:
-                if str(section.get("value")) == "2":
-                    for entry in section.get("entries") or []:
-                        calendar.append({
-                            "week": int(entry.get("value") or 0),
-                            "start": entry.get("startDate"),
-                            "end": entry.get("endDate"),
-                            "label": entry.get("detail"),
-                        })
-    res.data = {"events": events, "calendar": calendar}
-    return res
+        if not calendar:
+            for league in res.data.get("leagues") or []:
+                for section in league.get("calendar") or []:
+                    if str(section.get("value")) == "2":
+                        for entry in section.get("entries") or []:
+                            calendar.append({
+                                "week": int(entry.get("value") or 0),
+                                "start": entry.get("startDate"),
+                                "end": entry.get("endDate"),
+                                "label": entry.get("detail"),
+                            })
+    out = FetchResult({"events": events, "calendar": calendar}, newest,
+                      bool(errors), "; ".join(errors[:3]) if errors else None)
+    return out
 
 
 # ---------------------------------------------------------------------------

@@ -90,7 +90,10 @@ class Bundle:
             raise ValueError(f"No regular-season games for {self.season}")
         self.teams = data.team_list(sg)
 
-        sb = espn.fetch_scoreboard(self.season, refresh)
+        # The nflverse view of the week is enough to decide which ESPN weeks
+        # still need live polling.
+        approx_week = data.current_week(sg)
+        sb = espn.fetch_scoreboard(self.season, refresh, focus_week=approx_week)
         self._note("espn", sb)
         self.events = (sb.data or {}).get("events", {})
         cal = espn.fetch_calendar(refresh)
@@ -303,23 +306,64 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
     picks_per_week = {int(k): v for k, v in cfg["picksPerWeek"].items()}
     table = probs.build_prob_table(game_probs, teams, current_week, horizon, cfg["decay"], picks_per_week)
 
-    # ---- plan -----------------------------------------------------------
-    specs = []
+    # ---- close out finished weeks ---------------------------------------
+    # A locked pick in a week that is over becomes a permanent record, its
+    # result is read from the schedule, and a loss ends the entry. Writing
+    # this once into the saved config is what lets the tool run week to week
+    # instead of re-deriving history from locks on every load.
+    results: dict[tuple[int, str], str] = {}
+    for _, row in sg.iterrows():
+        if pd.isna(row.get("result")):
+            continue
+        r, wk = float(row["result"]), int(row["week"])
+        results[(wk, row["home_team"])] = "won" if r > 0 else ("tie" if r == 0 else "lost")
+        results[(wk, row["away_team"])] = "won" if r < 0 else ("tie" if r == 0 else "lost")
+
+    specs, migrated = [], []
     for e in cfg["entries"]:
-        used = set(e["used"])
-        locks = {}
+        picks = {str(k): list(v) for k, v in e["picks"].items()}
+        locks, closed, reserved = {}, [], set()
         for wk, ts in e["locks"].items():
-            if int(wk) < current_week:
-                # A lock in a played week is history: those teams are burned.
-                used.update(ts)
-                warnings.append(f"Entry {e['name']}: week {wk} lock {'/'.join(ts)} counted as used (week is over).")
-            elif int(wk) > horizon:
-                # Beyond the horizon the lock cannot be planned, but its teams
-                # are reserved so the plan does not burn them earlier.
-                used.update(ts)
+            w = int(wk)
+            if w < current_week:
+                picks[str(w)] = list(ts)          # the week is over: record it
+                closed.append((w, list(ts)))
+            elif w > horizon:
+                # Cannot be planned past the horizon, but reserve the teams so
+                # the plan does not burn them earlier.
+                reserved.update(ts)
+                locks[w] = list(ts)
             else:
-                locks[int(wk)] = list(ts)
-        specs.append(EntrySpec(e["name"], used, locks, e["alive"]))
+                locks[w] = list(ts)
+
+        used = set(e["used"]) | reserved
+        for ts in picks.values():
+            used.update(ts)
+
+        alive, elim = e["alive"], e["eliminatedWeek"]
+        if alive and elim is None:
+            for wk in sorted(picks, key=int):
+                if any(results.get((int(wk), t)) in ("lost", "tie") for t in picks[wk]):
+                    alive, elim = False, int(wk)
+                    break
+        for w, ts in sorted(closed):
+            outcome = [results.get((w, t)) for t in ts]
+            if any(o in ("lost", "tie") for o in outcome):
+                verdict = "lost"
+            elif all(o == "won" for o in outcome):
+                verdict = "won"
+            else:
+                verdict = "recorded (no result yet)"
+            warnings.append(f"Entry {e['name']}: week {w} pick {'/'.join(ts)} {verdict} — saved to history.")
+
+        plan_locks = {w: ts for w, ts in locks.items() if w <= horizon}
+        specs.append(EntrySpec(e["name"], used, plan_locks, alive))
+        migrated.append({
+            "name": e["name"], "used": sorted(set(e["used"]) | reserved), "picks": picks,
+            "locks": {str(w): ts for w, ts in sorted(locks.items())},
+            "alive": alive, "eliminatedWeek": elim,
+        })
+    by_name = {e["name"]: e for e in migrated}
     crowd = cfg["pickPct"].get(str(current_week), {})
     bonus = contrarian_bonus(table, crowd) if crowd else None
     weight = cfg["contrarianWeight"] if crowd else 0.0
@@ -460,9 +504,19 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
     # ---- entries and joint ------------------------------------------------
     entries_out = []
     for er in result.entries:
-        e_cfg = next(e for e in cfg["entries"] if e["name"] == er.spec.name)
+        e_cfg = by_name[er.spec.name]
+        history = []
+        for wk in sorted(e_cfg["picks"], key=int):
+            teams = e_cfg["picks"][wk]
+            outcome = [results.get((int(wk), t)) for t in teams]
+            history.append({
+                "week": int(wk), "teams": teams,
+                "result": "lost" if any(o in ("lost", "tie") for o in outcome)
+                          else ("won" if all(o == "won" for o in outcome) else "pending"),
+            })
         item = {
             "name": er.spec.name, "alive": er.spec.alive, "used": sorted(er.spec.used), "locks": e_cfg["locks"],
+            "picks": e_cfg["picks"], "history": history, "eliminatedWeek": e_cfg["eliminatedWeek"],
             "warnings": er.warnings,
         }
         if er.plan is None:
@@ -492,6 +546,7 @@ def build_dashboard(cfg: dict, refresh: bool = False) -> dict:
     cfg_echo = dict(cfg)
     cfg_echo["season"] = season
     cfg_echo["horizon"] = horizon
+    cfg_echo["entries"] = migrated
     return sanitize({
         "meta": {
             "season": season, "currentWeek": current_week, "generatedAt": _now_iso(), "horizon": horizon,

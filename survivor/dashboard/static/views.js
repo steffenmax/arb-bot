@@ -91,8 +91,8 @@ function heroCard(e) {
   const d = S.dash, cw = d.meta.currentWeek, H = d.meta.horizon, ec = entryClass(e.name);
   const usedTxt = `${(e.used || []).length} used`;
   if (!e.alive) {
-    return `<div class="hero dead ${ec}"><div class="kicker label"><span>Entry ${esc(e.name)} · Eliminated</span><span class="used">${usedTxt}</span></div>
-      <div class="team">—</div><div class="opp muted">Out of the pool. Toggle Alive in Entries to bring it back.</div></div>`;
+    return `<div class="hero dead ${ec}"><div class="kicker label"><span>Entry ${esc(e.name)} · Eliminated${e.eliminatedWeek ? ` W${e.eliminatedWeek}` : ''}</span><span class="used">${usedTxt}</span></div>
+      <div class="team">—</div><div class="opp muted">${e.eliminatedWeek ? `Lost in week ${e.eliminatedWeek}` : 'Out of the pool'}${(e.history || []).length ? ' · played ' + e.history.map((h) => `W${h.week} ${h.teams.join('+')}`).join(', ') : ''}</div></div>`;
   }
   const p = planAt(e, cw);
   if (!p || !p.teams.length) {
@@ -497,17 +497,55 @@ function renderDrawer() {
     el.className = 'drawer';
   } else if (dr.type === 'entries') {
     const codes = Object.keys(S.dash.teams).sort();
-    const blocks = dr.draft.map((e, idx) => `<div class="entry-block ${ENTRY_CLASSES[idx % ENTRY_CLASSES.length]}">
+    const results = {};
+    (S.dash.entries || []).forEach((e) => { results[e.name] = {}; (e.history || []).forEach((h) => { results[e.name][h.week] = h.result; }); });
+    const weekOf = (e) => { const m = {}; Object.entries(e.picks || {}).forEach(([w, ts]) => ts.forEach((t) => { m[t] = w; })); return m; };
+    const blocks = dr.draft.map((e, idx) => {
+      const byTeam = weekOf(e);
+      const hist = Object.keys(e.picks || {}).sort((a, b) => a - b).map((w) => {
+        const r = (results[e.name] || {})[w];
+        const mark = r === 'won' ? '<span class="tag p4">won</span>' : r === 'lost' ? '<span class="tag p1">lost</span>' : '<span class="tag muted">pending</span>';
+        return `<span style="margin-right:12px;white-space:nowrap">W${w} <b class="code">${esc(e.picks[w].join('+'))}</b> ${mark} <button class="text-btn" data-act="entry-drop-pick" data-idx="${idx}" data-week="${w}" title="remove this recorded pick">✕</button></span>`;
+      }).join('');
+      return `<div class="entry-block ${ENTRY_CLASSES[idx % ENTRY_CLASSES.length]}">
         <div class="eh"><input class="name" value="${esc(e.name)}" data-act="entry-name" data-idx="${idx}" maxlength="12" aria-label="entry name">
-          <button class="toggle" data-act="entry-alive" data-idx="${idx}" aria-pressed="${e.alive !== false}"></button><span class="tog-label">Alive</span>
-          <span class="spacer" style="flex:1"></span><span class="data-s muted">${(e.used || []).length} used</span><button class="text-btn danger" data-act="entry-remove" data-idx="${idx}">Remove</button></div>
-        <div class="label muted" style="margin:8px 0 4px">Used teams</div>
-        <div class="teamgrid">${codes.map((t) => `<button data-act="entry-used" data-idx="${idx}" data-team="${t}" aria-pressed="${(e.used || []).includes(t)}" title="${esc(S.dash.teams[t].displayName || t)}">${t}</button>`).join('')}</div>
+          <button class="toggle" data-act="entry-alive" data-idx="${idx}" aria-pressed="${e.alive !== false}"></button><span class="tog-label">Alive${e.eliminatedWeek ? ` (out W${e.eliminatedWeek})` : ''}</span>
+          <span class="spacer" style="flex:1"></span><span class="data-s muted">${Object.keys(byTeam).length + (e.used || []).length} burned</span><button class="text-btn danger" data-act="entry-remove" data-idx="${idx}">Remove</button></div>
+        <div class="label muted" style="margin:8px 0 4px">Picks played</div>
+        <div class="small" style="line-height:22px">${hist || '<span class="muted">none recorded yet — lock a pick, or paste them in below</span>'}</div>
+        <div class="label muted" style="margin:10px 0 4px">Burned teams <span class="muted" style="text-transform:none;letter-spacing:0">(outlined = from a recorded pick)</span></div>
+        <div class="teamgrid">${codes.map((t) => {
+          const w = byTeam[t];
+          const on = !!w || (e.used || []).includes(t);
+          return `<button data-act="entry-used" data-idx="${idx}" data-team="${t}" aria-pressed="${on}" ${w ? 'disabled' : ''} title="${esc(S.dash.teams[t].displayName || t)}${w ? ` — played in week ${w}` : ''}">${t}${w ? `<sup>${w}</sup>` : ''}</button>`;
+        }).join('')}</div>
         ${Object.keys(e.locks || {}).length ? `<div class="data-s muted" style="margin-top:8px">locks: ${Object.entries(e.locks).map(([w, t]) => `W${w} ${t.join('+')}`).join(' · ')} <button class="text-btn" data-act="entry-clear-locks" data-idx="${idx}">clear</button></div>` : ''}
-      </div>`).join('');
+      </div>`;
+    }).join('');
+    const imp = dr.imported;
+    const preview = !imp ? '' : `<div style="margin-top:12px">
+        ${Object.keys(imp.entries || {}).length ? `<table class="ledger"><thead><tr><th>Read from your paste</th><th>Picks</th><th>Goes to</th></tr></thead><tbody>
+          ${Object.entries(imp.entries).map(([name, picks]) => `<tr><td class="strong">${esc(name)}</td>
+            <td class="data">${picks.map((p) => `W${p.week} ${esc(p.team)}`).join(' · ')}</td>
+            <td><span class="sel"><select data-act="import-map" data-source="${esc(name)}">
+              <option value="">skip</option>
+              ${dr.draft.map((e, i) => `<option value="${i}" ${String((dr.map || {})[name]) === String(i) ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}
+            </select></span></td></tr>`).join('')}
+        </tbody></table>` : ''}
+        ${(imp.notes || []).length ? `<ul class="small muted" style="margin:8px 0 0;padding-left:18px">${imp.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+        ${Object.keys(imp.entries || {}).length ? '<button class="btn-secondary" style="margin-top:10px" data-act="import-apply">Add these picks</button>' : ''}
+      </div>`;
     html = `<div class="dhead"><div class="display-s">Entries</div><button class="text-btn" data-act="close-drawer">Close ✕</button></div>
-      <div class="dbody">${blocks}<div style="padding:16px 0">${dr.draft.length < 5 ? '<button class="btn-secondary" data-act="entry-add">Add entry</button>' : ''}</div></div>
-      <div class="dfoot"><button class="btn-primary" data-act="entries-save">Save and re-plan</button><button class="text-btn" data-act="close-drawer">Cancel</button><span class="data-s muted" style="margin-left:auto">used = burned in an earlier week</span></div>`;
+      <div class="dbody">${blocks}<div style="padding:16px 0">${dr.draft.length < 5 ? '<button class="btn-secondary" data-act="entry-add">Add entry</button>' : ''}</div>
+        <div style="border-top:1px solid var(--rule-strong);padding-top:16px">
+          <div class="display-s">Import picks</div>
+          <p class="small muted" style="max-width:60ch">Open your pool's entries page, select the picks and copy. Paste below; nothing is saved until you review it. Team names, cities or capitalised codes all work, and each pick needs a week number.</p>
+          <textarea class="inp" data-act="import-text" rows="6" style="width:100%;font-family:var(--font-data);font-size:12px;border:1px solid var(--rule-strong);padding:8px" placeholder="Entry 1&#10;Week 1   Philadelphia Eagles   WIN&#10;Week 2   Buffalo Bills   LOSS">${esc(dr.text || '')}</textarea>
+          <button class="btn-secondary" style="margin-top:8px" data-act="import-parse">Read picks</button>
+          ${preview}
+        </div>
+      </div>
+      <div class="dfoot"><button class="btn-primary" data-act="entries-save">Save and re-plan</button><button class="text-btn" data-act="close-drawer">Cancel</button><span class="data-s muted" style="margin-left:auto">burned = cannot be picked again</span></div>`;
     el.className = 'drawer narrow';
   } else if (dr.type === 'crowd') {
     const wi = weekInfo(dr.week);
@@ -531,6 +569,40 @@ window.onDrawerAction = function (act, el) {
     case 'entry-alive': dr.draft[idx].alive = el.getAttribute('aria-pressed') !== 'true'; renderDrawer(); break;
     case 'entry-used': { const e = dr.draft[idx]; e.used = e.used || []; const t = el.dataset.team; if (e.used.includes(t)) e.used = e.used.filter((x) => x !== t); else e.used.push(t); renderDrawer(); break; }
     case 'entry-clear-locks': dr.draft[idx].locks = {}; renderDrawer(); break;
+    case 'entry-drop-pick': { const e = dr.draft[idx]; delete e.picks[el.dataset.week]; if (e.eliminatedWeek === Number(el.dataset.week)) { e.eliminatedWeek = null; e.alive = true; } renderDrawer(); break; }
+    case 'import-text': dr.text = el.value; break;
+    case 'import-parse': {
+      const box = document.querySelector('[data-act="import-text"]');
+      dr.text = box ? box.value : (dr.text || '');
+      api('POST', '/api/import', { text: dr.text, knownEntries: dr.draft.map((e) => e.name) })
+        .then((r) => {
+          dr.imported = r;
+          dr.map = {};
+          Object.keys(r.entries || {}).forEach((name, i) => {
+            const exact = dr.draft.findIndex((e) => e.name.toLowerCase() === name.toLowerCase());
+            dr.map[name] = String(exact >= 0 ? exact : Math.min(i, dr.draft.length - 1));
+          });
+          renderDrawer();
+        })
+        .catch((err) => { dr.imported = { entries: {}, notes: ['Could not read that: ' + err.message] }; renderDrawer(); });
+      break;
+    }
+    case 'import-map': dr.map = { ...(dr.map || {}), [el.dataset.source]: el.value }; break;
+    case 'import-apply': {
+      let added = 0;
+      Object.entries((dr.imported || {}).entries || {}).forEach(([name, picks]) => {
+        const target = (dr.map || {})[name];
+        if (target === '' || target == null) return;
+        const e = dr.draft[Number(target)];
+        if (!e) return;
+        e.picks = e.picks || {};
+        picks.forEach((p) => { e.picks[String(p.week)] = [p.team]; added++; });
+      });
+      dr.imported = null; dr.text = '';
+      renderDrawer();
+      toast(`${added} pick${added === 1 ? '' : 's'} added — press Save to apply.`);
+      break;
+    }
     case 'entry-remove': dr.draft.splice(idx, 1); renderDrawer(); break;
     case 'entry-add': { const names = new Set(dr.draft.map((e) => e.name)); let n = 'A'; while (names.has(n)) n = String.fromCharCode(n.charCodeAt(0) + 1); dr.draft.push({ name: n, used: [], locks: {}, alive: true }); renderDrawer(); break; }
     case 'entries-save': { const draft = dr.draft; S.ui.drawer = null; renderDrawer(); mutate((c) => { c.entries = draft; }, { toast: 'Entries saved' }); break; }

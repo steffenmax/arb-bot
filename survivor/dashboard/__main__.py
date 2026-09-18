@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 
 from . import config as cfgmod
 from . import service
+from .. import importer
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 VERSION = "1.0.0"
@@ -101,6 +102,17 @@ class Handler(BaseHTTPRequestHandler):
                 with _lock:
                     payload = service.build_dashboard(cfg)
                 self._json(200, payload)
+            elif path == "/api/import":
+                body = self._read_json()
+                text = body.get("text") or ""
+                if not isinstance(text, str):
+                    raise cfgmod.ConfigError("import body needs a 'text' string")
+                parsed = importer.parse_picks(
+                    text,
+                    default_entry=str(body.get("entry") or "A"),
+                    known_entries=[str(n) for n in (body.get("knownEntries") or [])],
+                )
+                self._json(200, parsed.as_dict())
             elif path == "/api/refresh":
                 with _lock:
                     ages, warns = service.refresh_all()

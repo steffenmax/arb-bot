@@ -162,6 +162,36 @@ python3 -m survivor [--season Y] [--week N] [--end-week N] [--entries N]
                     [--objective any|final|expected] [--refresh] [--show-paths]
 ```
 
+## Recording what you played
+
+The optimizer can only avoid a team it knows you burned, so each week's pick
+has to be recorded. There are two ways, and both end up in the same place.
+
+**Lock it.** Press Lock on the pick you actually submitted. When that week
+ends the lock becomes a permanent entry in your history, the result is read
+from the schedule, and a loss marks the entry eliminated. Nothing to do on
+Monday.
+
+**Paste it.** Open Entries, scroll to Import picks, and paste from your
+pool's entries page. No pool site offers an export, so this reads ordinary
+copied text: it looks for a week number and a team on each line and handles
+full names, cities, nicknames and capitalised codes.
+
+```
+Entry 1
+Week 1   Philadelphia Eagles   WIN
+Week 2   Buffalo Bills         LOSS
+```
+
+Compact lines work too (`A: W1 PHI, W2 BUF`), as does a week header with the
+team underneath. Nothing is written until you review the preview, where each
+block it found gets a dropdown to choose which of your entries it belongs to.
+Picks read as history show in the burned-team grid with their week, outlined
+so you can tell them from teams you marked by hand.
+
+A pool site behind a login cannot be read directly, so copy and paste is the
+route. Nothing about your account is needed or stored.
+
 ## If something goes wrong
 
 The launcher checks the server and builds the plan once before opening your

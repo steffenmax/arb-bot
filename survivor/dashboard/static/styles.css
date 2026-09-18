@@ -368,7 +368,9 @@ table.ledger td .path { max-width: 100%; }
 .teamgrid { display: grid; grid-template-columns: repeat(8, 40px); gap: 2px; }
 .teamgrid button { height: 28px; font-family: var(--font-data); font-size: 12px; color: var(--ink-2); background: var(--paper); border: 1px solid var(--rule); }
 .teamgrid button[aria-pressed="true"] { background: var(--paper-inverse); color: var(--ink-inverse); border-color: var(--paper-inverse); }
-.teamgrid button[disabled] { color: var(--ink-4); border-style: dashed; cursor: not-allowed; }
+.teamgrid button[disabled] { cursor: default; }
+.teamgrid button[disabled][aria-pressed="true"] { outline: 1px solid var(--ink); outline-offset: -3px; }
+.teamgrid button sup { font-size: 8px; margin-left: 1px; vertical-align: super; }
 .crowd-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 12px; }
 .crowd-grid label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--font-data); font-size: 12px; height: 28px; }
 .crowd-grid input { width: 52px; text-align: right; background: var(--paper); border: 0; border-bottom: 1px solid var(--rule-strong); font-family: var(--font-data); font-size: 12px; height: 26px; }

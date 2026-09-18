@@ -25,7 +25,7 @@ def wait_idle(page):
     page.wait_for_function("() => window.S && window.S.dash && !window.S.pending && !window.S.loading", timeout=30000)
     page.wait_for_timeout(100)
 
-clean = {"entries": [{"name": "A", "used": [], "locks": {}, "alive": True}, {"name": "B", "used": [], "locks": {}, "alive": True}, {"name": "C", "used": [], "locks": {}, "alive": True}],
+clean = {"entries": [{"name": n, "used": [], "picks": {}, "locks": {}, "alive": True, "eliminatedWeek": None} for n in ("A", "B", "C")],
          "picksPerWeek": {}, "horizon": 10, "decay": 0.03, "objective": "any", "topBranches": 10, "contrarianWeight": 1.0, "hedge": 0.1, "pickPct": {}, "overrides": {}, "injuryAdjust": True}
 put_config(clean)
 
@@ -118,16 +118,42 @@ with sync_playwright() as p:
     page.locator('[data-act="close-drawer"]').first.click(); page.wait_for_timeout(200)
     check("cancel discards draft", get_config()["entries"][1]["alive"] is True)
 
+    # ---- paste import: preview, map, apply, and automatic elimination
+    page.locator('[data-act="open-entries"]').first.click(); page.wait_for_timeout(300)
+    page.fill('[data-act="import-text"]', "Entry 1\nWeek 1 Philadelphia Eagles WIN\nEntry 2\nWeek 1 Cleveland Browns LOSS")
+    page.locator('[data-act="import-parse"]').click(); page.wait_for_timeout(1200)
+    check("import preview lists both entries", page.locator('#drawer table.ledger tbody tr').count() == 2)
+    page.locator('[data-act="import-apply"]').click(); page.wait_for_timeout(400)
+    page.locator('[data-act="entries-save"]').click(); wait_idle(page)
+    cfg = get_config()
+    check("imported picks persist", cfg["entries"][0]["picks"].get("1") == ["PHI"], json.dumps(cfg["entries"][0]))
+    check("a losing pick eliminates its entry", cfg["entries"][1]["alive"] is False and cfg["entries"][1]["eliminatedWeek"] == 1,
+          json.dumps(cfg["entries"][1]))
+    check("burned team is off the board", page.evaluate("!S.dash.entries[0].plan.some(p => p.teams.includes('PHI'))"))
+    check("history is reported", page.evaluate("S.dash.entries[0].history[0].result") == "won")
+    put_config(clean)
+    page.reload(); wait_idle(page)
+
     # ---- crowd editor
     page.goto(BASE + "/#/week"); wait_idle(page)
+    # the crowd favourite must be a team that actually plays this week
+    fave = page.evaluate("S.dash.entries[0].plan[0].teams[0]")
     page.locator('[data-act="open-crowd"]').first.click(); page.wait_for_timeout(200)
-    page.fill('input[data-act="crowd-input"][data-team="LAC"]', "40")
-    page.locator('input[data-act="crowd-input"][data-team="LAC"]').dispatch_event("change")
+    # a modest share keeps the team on the board, so the value can be checked there
+    page.fill(f'input[data-act="crowd-input"][data-team="{fave}"]', "30")
+    page.locator(f'input[data-act="crowd-input"][data-team="{fave}"]').dispatch_event("change")
     page.locator('[data-act="crowd-save"]').click(); wait_idle(page)
     cfg = get_config()
-    check("crowd persists", cfg["pickPct"].get(str(cw), {}).get("LAC") == 40, json.dumps(cfg["pickPct"]))
-    check("crowd reaches branches", page.evaluate("S.dash.entries.some(e => (e.branches[String(S.dash.meta.currentWeek)]||[]).some(b => b.teams[0] === 'LAC' && b.crowdPct === 40))"))
-    check("contrarian fade moves picks off LAC", page.evaluate("!S.dash.entries.some(e => e.plan[0].teams.includes('LAC'))"))
+    check("crowd persists", cfg["pickPct"].get(str(cw), {}).get(fave) == 30, json.dumps(cfg["pickPct"]))
+    check("crowd percentage reaches the branch data", page.evaluate(
+        f"S.dash.entries.some(e => (e.branches[String(S.dash.meta.currentWeek)]||[]).some(b => b.teams[0] === '{fave}' && b.crowdPct === 30))"))
+    # a heavily owned team should be faded out of the recommendation entirely
+    page.locator('[data-act="open-crowd"]').first.click(); page.wait_for_timeout(200)
+    page.fill(f'input[data-act="crowd-input"][data-team="{fave}"]', "90")
+    page.locator(f'input[data-act="crowd-input"][data-team="{fave}"]').dispatch_event("change")
+    page.locator('[data-act="crowd-save"]').click(); wait_idle(page)
+    check(f"contrarian fade moves picks off the 90% favourite ({fave})",
+          page.evaluate(f"!S.dash.entries.some(e => e.plan[0].teams.includes('{fave}'))"))
 
     # ---- routing
     page.goto(BASE + "/#/branches/B/3"); wait_idle(page)

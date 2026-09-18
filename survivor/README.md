@@ -259,6 +259,34 @@ the picks out of that. Every capture is saved under `survivor/cache/splash/`
 so you can see exactly what came back. Nothing is written into your plan until
 you review the preview in the dashboard and map each entry.
 
+### Teaching it your pool's pages
+
+The site is behind a login and documents nothing, so rather than guess at its
+API there is a recorder that watches your own browser use it:
+
+```bash
+python3 -m survivor.discover
+```
+
+A window opens in the profile you signed into. It walks you through three
+phases — your entries page, making a pick, then the league statistics page —
+and records every JSON call each one makes. It writes a short readable report
+of the endpoints and response shapes, plus the full capture, to
+`survivor/cache/splash/`. The report is what an exact parser gets written
+from.
+
+Request headers are never recorded, and every key named like a token, every
+JWT, every long opaque string and every email address is redacted from both
+files before they are written.
+
+Once the statistics page is known, point the sync at it and the pick
+percentages come from the whole pool instead of from however many entries the
+listing happened to render:
+
+```bash
+python3 -m survivor.splash --stats-url "https://.../statistics"
+```
+
 ### Keeping it up to date
 
 The sync also captures what percentage of the pool is on each team, which is

@@ -56,6 +56,11 @@ ENTRY_KEYS = _keys("entryName", "entry_name", "name", "nickname", "username", "u
                    "displayName", "display_name", "alias", "teamName", "entry", "label")
 STATUS_KEYS = _keys("status", "state", "result", "outcome", "isEliminated", "eliminated",
                     "alive", "isAlive")
+COUNT_KEYS = _keys("count", "picks", "pickCount", "pick_count", "numPicks", "num_picks",
+                   "entries", "entryCount", "entry_count", "total", "totalPicks", "n",
+                   "selections", "selectionCount")
+PCT_KEYS = _keys("percent", "percentage", "pct", "pickPercent", "pick_percent",
+                 "pickPercentage", "pickPct", "share", "rate", "ownership")
 
 
 class SplashError(RuntimeError):
@@ -191,8 +196,91 @@ def extract_picks(payload) -> list[dict]:
     return unique
 
 
-def summarise(picks: list[dict], me: str | None = None) -> dict:
-    """Split the pool into your entries and everyone else's pick distribution."""
+def extract_pool_stats(payload) -> list[dict]:
+    """Whole-pool pick counts from a stats page.
+
+    The statistics page reports the pool directly - how many entries took each
+    team - which is a truer number than counting the entries a listing happens
+    to show. Matched on shape: any object naming a team alongside a count or a
+    percentage, taking its week from the nearest enclosing object that has one.
+    """
+    weeks: dict[str, int] = {}
+    for path, obj in walk(payload):
+        for k, v in obj.items():
+            if _norm(k) in WEEK_KEYS:
+                wk = week_from(v)
+                if wk is not None:
+                    weeks[path] = wk
+                    break
+
+    def enclosing_week(path: str) -> int | None:
+        best = None
+        for prefix, wk in weeks.items():
+            # "" is the root object, which encloses everything.
+            if prefix and not (path == prefix or path.startswith(prefix + ".")
+                               or path.startswith(prefix + "[")):
+                continue
+            if best is None or len(prefix) > len(best[0]):
+                best = (prefix, wk)
+        return best[1] if best else None
+
+    rows: list[dict] = []
+    for path, obj in walk(payload):
+        team = count = pct = None
+        for k, v in obj.items():
+            n = _norm(k)
+            if team is None and n in TEAM_KEYS:
+                team = team_from(v)
+            if count is None and n in COUNT_KEYS and isinstance(v, (int, float)) \
+                    and not isinstance(v, bool) and float(v) == int(v) and v >= 0:
+                count = int(v)
+            if pct is None and n in PCT_KEYS and isinstance(v, (int, float)) \
+                    and not isinstance(v, bool) and 0 <= float(v) <= 100:
+                pct = float(v)
+        if team and (count is not None or pct is not None):
+            rows.append({"week": enclosing_week(path), "team": team,
+                         "count": count, "pct": pct, "path": path})
+
+    seen, unique = set(), []
+    for r in rows:
+        key = (r["week"], r["team"])
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(r)
+    return unique
+
+
+def pool_pick_pct(rows: list[dict]) -> dict[str, dict[str, float]]:
+    """Week -> team -> percent of the pool, from stats rows.
+
+    A site that already publishes percentages is believed. Otherwise the counts
+    are turned into percentages of that week's total.
+    """
+    by_week: dict[int, list[dict]] = defaultdict(list)
+    for r in rows:
+        if r["week"] is not None:
+            by_week[r["week"]].append(r)
+    out: dict[str, dict[str, float]] = {}
+    for wk, items in by_week.items():
+        if all(i["pct"] is not None for i in items):
+            out[str(wk)] = {i["team"]: round(i["pct"], 1) for i in items}
+            continue
+        total = sum(i["count"] or 0 for i in items)
+        if not total:
+            continue
+        out[str(wk)] = {i["team"]: round(100.0 * (i["count"] or 0) / total, 1) for i in items}
+    return out
+
+
+def summarise(picks: list[dict], me: str | None = None,
+              stats: list[dict] | None = None) -> dict:
+    """Split the pool into your entries and the league-wide pick distribution.
+
+    Percentages come from the statistics page when it was captured, since that
+    covers the whole pool; counting the entries a listing rendered is the
+    fallback and is only as complete as that listing.
+    """
     by_entry: dict[str, dict[int, list[str]]] = defaultdict(dict)
     for p in picks:
         by_entry[p["entry"] or "(unnamed)"][p["week"]] = [p["team"]]
@@ -205,18 +293,38 @@ def summarise(picks: list[dict], me: str | None = None) -> dict:
         str(wk): {t: round(100.0 * n / sum(c.values()), 1) for t, n in c.items()}
         for wk, c in crowd.items() if sum(c.values())
     }
+    pct_source = "entry listing" if pick_pct else "none"
+    counts: dict[str, dict[str, int]] = {}
+    if stats:
+        from_stats = pool_pick_pct(stats)
+        if from_stats:
+            pick_pct = {**pick_pct, **from_stats}
+            pct_source = "statistics page"
+        for r in stats:
+            if r["week"] is not None and r["count"] is not None:
+                counts.setdefault(str(r["week"]), {})[r["team"]] = r["count"]
     mine = {k: v for k, v in by_entry.items() if me and me.lower() in k.lower()}
+    pool_size = len(by_entry)
+    for wk_counts in counts.values():
+        pool_size = max(pool_size, sum(wk_counts.values()))
     return {
         "entries": {k: {str(w): t for w, t in sorted(v.items())} for k, v in by_entry.items()},
         "mine": {k: {str(w): t for w, t in sorted(v.items())} for k, v in mine.items()},
         "pickPct": pick_pct,
-        "poolSize": len(by_entry),
+        "pickCounts": counts,
+        "pctSource": pct_source,
+        "poolSize": pool_size,
     }
 
 
 # ---------------------------------------------------------------- browser
-def _capture(url: str, headless: bool, wait: float, on_ready=None) -> tuple[list[dict], str]:
-    """Open `url` in the saved profile and record the JSON its page fetches."""
+def _capture(url: str, headless: bool, wait: float, on_ready=None,
+             also: list[str] | None = None) -> tuple[list[dict], str]:
+    """Open `url` in the saved profile and record the JSON its page fetches.
+
+    `also` names further pages to visit in the same session, so the entries
+    page and the statistics page are read under one sign-in.
+    """
     sync_playwright = _playwright()
     os.makedirs(PROFILE_DIR, exist_ok=True)
     os.makedirs(CAPTURE_DIR, exist_ok=True)
@@ -255,6 +363,17 @@ def _capture(url: str, headless: bool, wait: float, on_ready=None) -> tuple[list
         except Exception:
             pass
         page_text = page.inner_text("body")
+        for extra in (also or []):
+            try:
+                page.goto(extra, wait_until="domcontentloaded", timeout=60000)
+                page.wait_for_timeout(int(wait * 1000))
+                try:
+                    page.wait_for_load_state("networkidle", timeout=15000)
+                except Exception:
+                    pass
+                page_text += "\n\n" + page.inner_text("body")
+            except Exception as exc:
+                print(f"survivor: could not read {extra}: {exc}", file=sys.stderr)
         ctx.close()
     return payloads, page_text
 
@@ -278,9 +397,16 @@ def login(url: str) -> None:
     print("\nSession saved. From now on: python3 -m survivor.splash")
 
 
-def sync(url: str, me: str | None = None, wait: float = 8.0, keep_raw: bool = True) -> dict:
-    """Pull the contest page and pull picks out of what its front end fetched."""
-    payloads, text = _capture(url, headless=True, wait=wait)
+def sync(url: str, me: str | None = None, wait: float = 8.0, keep_raw: bool = True,
+         stats_url: str | None = None) -> dict:
+    """Pull the contest pages and pull picks out of what their front end fetched.
+
+    `stats_url` is the league-wide statistics page. When given it is read in the
+    same session, and its numbers - which cover the whole pool - are what the
+    pick percentages are built from.
+    """
+    payloads, text = _capture(url, headless=True, wait=wait,
+                              also=[stats_url] if stats_url else None)
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     raw_path = None
     if keep_raw:
@@ -291,8 +417,10 @@ def sync(url: str, me: str | None = None, wait: float = 8.0, keep_raw: bool = Tr
                        "pageText": text[:20000]}, fh, indent=2)
 
     picks: list[dict] = []
+    stats: list[dict] = []
     for item in payloads:
         picks.extend(extract_picks(item["body"]))
+        stats.extend(extract_pool_stats(item["body"]))
     source = "api"
     if not picks:
         from .importer import parse_picks           # fall back to the visible text
@@ -302,9 +430,10 @@ def sync(url: str, me: str | None = None, wait: float = 8.0, keep_raw: bool = Tr
                           "status": p["result"], "path": "pageText"} for p in plist)
         source = "page text"
 
-    out = summarise(picks, me)
+    out = summarise(picks, me, stats)
     out.update({
         "source": source, "responses": len(payloads), "rawCapture": raw_path,
+        "statsRows": len(stats),
         "signedIn": "sign in" not in text.lower() and "log in" not in text.lower(),
         "capturedAt": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     })
@@ -315,6 +444,7 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="python3 -m survivor.splash",
                                  description="Pull your contest entries using your own signed-in browser.")
     ap.add_argument("--url", help="the contest entries page (remembered after the first run)")
+    ap.add_argument("--stats-url", help="the league statistics page, for whole-pool pick percentages")
     ap.add_argument("--login", action="store_true", help="open a window to sign in, once")
     ap.add_argument("--me", help="text that appears in your own entry names, to tell them from the pool's")
     ap.add_argument("--watch", type=float, metavar="MINUTES", help="keep pulling on this interval")
@@ -328,9 +458,12 @@ def main(argv: list[str] | None = None) -> None:
         ap.error("no contest URL yet — pass --url https://... the first time")
     if args.me:
         settings["me"] = args.me
+    if args.stats_url:
+        settings["statsUrl"] = args.stats_url
     settings["url"] = url
     save_settings(settings)
     me = args.me or settings.get("me")
+    stats_url = args.stats_url or settings.get("statsUrl")
 
     if args.login:
         login(url)
@@ -338,7 +471,7 @@ def main(argv: list[str] | None = None) -> None:
 
     def once():
         try:
-            res = sync(url, me, wait=args.wait)
+            res = sync(url, me, wait=args.wait, stats_url=stats_url)
         except SplashError as exc:
             print(f"survivor: {exc}", file=sys.stderr)
             return 1
@@ -353,7 +486,11 @@ def main(argv: list[str] | None = None) -> None:
             print(f"   {name}: " + ", ".join(f"W{w} {'+'.join(t)}" for w, t in sorted(weeks.items(), key=lambda kv: int(kv[0]))))
         for wk, dist in sorted(res["pickPct"].items(), key=lambda kv: int(kv[0])):
             top = sorted(dist.items(), key=lambda kv: -kv[1])[:6]
-            print(f"   week {wk} crowd: " + ", ".join(f"{t} {p}%" for t, p in top))
+            counts = res.get("pickCounts", {}).get(wk, {})
+            parts = [f"{t} {p}%" + (f" ({counts[t]})" if t in counts else "") for t, p in top]
+            print(f"   week {wk} crowd: " + ", ".join(parts))
+        if res["pickPct"]:
+            print(f"   percentages from the {res['pctSource']}")
         if res["rawCapture"]:
             print(f"   raw capture: {res['rawCapture']}")
         if not res["entries"]:

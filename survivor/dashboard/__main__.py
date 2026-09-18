@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 
 from . import config as cfgmod
 from . import service
-from .. import importer
+from .. import importer, splash
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 VERSION = "1.0.0"
@@ -113,6 +113,48 @@ class Handler(BaseHTTPRequestHandler):
                     known_entries=[str(n) for n in (body.get("knownEntries") or [])],
                 )
                 self._json(200, parsed.as_dict())
+            elif path == "/api/splash/sync":
+                body = self._read_json()
+                settings = splash.load_settings()
+                url = (body.get("url") or settings.get("url") or "").strip()
+                me = (body.get("me") or settings.get("me") or "").strip()
+                if not url:
+                    raise cfgmod.ConfigError("Enter the web address of your pool's entries page first.")
+                settings.update({"url": url, "me": me})
+                splash.save_settings(settings)
+                try:
+                    with _lock:
+                        res = splash.sync(url, me or None)
+                except splash.SplashError as exc:
+                    self._json(503, {"error": str(exc)})
+                    return
+                picked = res["mine"] or res["entries"]
+                out = {
+                    "entries": {name: [{"week": int(w), "team": t[0], "matched": t[0], "result": None}
+                                       for w, t in sorted(weeks.items(), key=lambda kv: int(kv[0]))]
+                                for name, weeks in picked.items()},
+                    "pickPct": res["pickPct"],
+                    "poolSize": res["poolSize"],
+                    "signedIn": res["signedIn"],
+                    "notes": [],
+                }
+                if not res["signedIn"]:
+                    out["notes"].append(
+                        "That page came back signed out. In a terminal run: "
+                        "python3 -m survivor.splash --login")
+                elif not picked:
+                    out["notes"].append(
+                        f"Signed in and captured {res['responses']} response(s), but no picks were "
+                        f"recognised. The raw capture is at {res['rawCapture']}.")
+                else:
+                    out["notes"].append(
+                        f"Read {res['poolSize']} entr{'y' if res['poolSize'] == 1 else 'ies'} "
+                        f"from the pool via {res['source']}.")
+                    if res["pickPct"]:
+                        weeks = ", ".join(sorted(res["pickPct"], key=int))
+                        out["notes"].append(f"Crowd percentages captured for week(s) {weeks}; "
+                                            f"applying these picks will use them too.")
+                self._json(200, out)
             elif path == "/api/refresh":
                 with _lock:
                     ages, warns = service.refresh_all()

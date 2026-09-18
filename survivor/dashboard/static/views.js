@@ -542,6 +542,16 @@ function renderDrawer() {
           <p class="small muted" style="max-width:60ch">Open your pool's entries page, select the picks and copy. Paste below; nothing is saved until you review it. Team names, cities or capitalised codes all work, and each pick needs a week number.</p>
           <textarea class="inp" data-act="import-text" rows="6" style="width:100%;font-family:var(--font-data);font-size:12px;border:1px solid var(--rule-strong);padding:8px" placeholder="Entry 1&#10;Week 1   Philadelphia Eagles   WIN&#10;Week 2   Buffalo Bills   LOSS">${esc(dr.text || '')}</textarea>
           <button class="btn-secondary" style="margin-top:8px" data-act="import-parse">Read picks</button>
+          <div style="border-top:1px solid var(--rule);margin-top:16px;padding-top:14px">
+            <div class="label muted">Or pull it from your pool automatically</div>
+            <p class="small muted" style="max-width:60ch">Sign in once in your own browser and this reads your entries, and the whole pool's pick percentages, straight from the page. Your login stays on this machine.</p>
+            <label class="ctl" style="display:block;margin-bottom:8px"><span class="k">Entries page</span><br>
+              <input class="inp" data-act="splash-url" style="width:100%;font-family:var(--font-data);font-size:12px" placeholder="https://your-pool.example.com/contests/…/entries" value="${esc(dr.splashUrl || '')}"></label>
+            <label class="ctl" style="display:block;margin-bottom:8px"><span class="k">My entries are named like</span><br>
+              <input class="inp" data-act="splash-me" style="width:220px;font-family:var(--font-data);font-size:12px" placeholder="your name" value="${esc(dr.splashMe || '')}"></label>
+            <button class="btn-secondary" data-act="splash-sync" ${dr.syncing ? 'disabled' : ''}>${dr.syncing ? 'Reading your pool…' : 'Sync from my pool'}</button>
+            <p class="small muted" style="margin-top:8px">First time only, in a terminal: <code>python3 -m survivor.splash --login</code></p>
+          </div>
           ${preview}
         </div>
       </div>
@@ -588,6 +598,27 @@ window.onDrawerAction = function (act, el) {
       break;
     }
     case 'import-map': dr.map = { ...(dr.map || {}), [el.dataset.source]: el.value }; break;
+    case 'splash-url': dr.splashUrl = el.value; break;
+    case 'splash-me': dr.splashMe = el.value; break;
+    case 'splash-sync': {
+      const url = (document.querySelector('[data-act="splash-url"]') || {}).value || dr.splashUrl || '';
+      const me = (document.querySelector('[data-act="splash-me"]') || {}).value || dr.splashMe || '';
+      dr.splashUrl = url; dr.splashMe = me; dr.syncing = true; renderDrawer();
+      api('POST', '/api/splash/sync', { url, me })
+        .then((r) => {
+          dr.syncing = false;
+          dr.imported = r;
+          dr.pickPct = r.pickPct || null;
+          dr.map = {};
+          Object.keys(r.entries || {}).forEach((name, i) => {
+            const exact = dr.draft.findIndex((e) => e.name.toLowerCase() === name.toLowerCase());
+            dr.map[name] = String(exact >= 0 ? exact : Math.min(i, dr.draft.length - 1));
+          });
+          renderDrawer();
+        })
+        .catch((err) => { dr.syncing = false; dr.imported = { entries: {}, notes: ['Sync failed: ' + err.message] }; renderDrawer(); });
+      break;
+    }
     case 'import-apply': {
       let added = 0;
       Object.entries((dr.imported || {}).entries || {}).forEach(([name, picks]) => {
@@ -598,14 +629,24 @@ window.onDrawerAction = function (act, el) {
         e.picks = e.picks || {};
         picks.forEach((p) => { e.picks[String(p.week)] = [p.team]; added++; });
       });
-      dr.imported = null; dr.text = '';
+      const pct = dr.pickPct;
+      dr.imported = null; dr.text = ''; dr.pickPct = null;
+      if (pct && Object.keys(pct).length) dr.crowd = pct;
       renderDrawer();
-      toast(`${added} pick${added === 1 ? '' : 's'} added — press Save to apply.`);
+      toast(`${added} pick${added === 1 ? '' : 's'}${pct ? ' and the pool\u2019s crowd percentages' : ''} added — press Save to apply.`);
       break;
     }
     case 'entry-remove': dr.draft.splice(idx, 1); renderDrawer(); break;
     case 'entry-add': { const names = new Set(dr.draft.map((e) => e.name)); let n = 'A'; while (names.has(n)) n = String.fromCharCode(n.charCodeAt(0) + 1); dr.draft.push({ name: n, used: [], locks: {}, alive: true }); renderDrawer(); break; }
-    case 'entries-save': { const draft = dr.draft; S.ui.drawer = null; renderDrawer(); mutate((c) => { c.entries = draft; }, { toast: 'Entries saved' }); break; }
+    case 'entries-save': {
+      const draft = dr.draft, crowd = dr.crowd;
+      S.ui.drawer = null; renderDrawer();
+      mutate((c) => {
+        c.entries = draft;
+        if (crowd) { c.pickPct = { ...(c.pickPct || {}), ...crowd }; }
+      }, { toast: crowd ? 'Entries and crowd percentages saved' : 'Entries saved' });
+      break;
+    }
     case 'crowd-input': { const v = Number(el.value); if (el.value === '' || Number.isNaN(v) || v <= 0) delete dr.draft[el.dataset.team]; else dr.draft[el.dataset.team] = v; break; }
     case 'crowd-clear': dr.draft = {}; renderDrawer(); break;
     case 'crowd-save': { const wk = String(dr.week), draft = dr.draft; S.ui.drawer = null; renderDrawer(); mutate((c) => { c.pickPct = c.pickPct || {}; if (Object.keys(draft).length) c.pickPct[wk] = draft; else delete c.pickPct[wk]; }, { toast: `Crowd picks saved for W${wk}` }); break; }

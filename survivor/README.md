@@ -172,6 +172,11 @@ ends the lock becomes a permanent entry in your history, the result is read
 from the schedule, and a loss marks the entry eliminated. Nothing to do on
 Monday.
 
+**Sync it from your pool.** Open Entries, scroll to Import picks, put in the
+web address of your pool's entries page and press Sync from my pool. This
+reads your entries, and the whole pool's pick percentages, out of the page
+using a browser on this machine. See Connecting your pool below.
+
 **Paste it.** Open Entries, scroll to Import picks, and paste from your
 pool's entries page. No pool site offers an export, so this reads ordinary
 copied text: it looks for a week number and a team on each line and handles
@@ -191,6 +196,70 @@ so you can tell them from teams you marked by hand.
 
 A pool site behind a login cannot be read directly, so copy and paste is the
 route. Nothing about your account is needed or stored.
+
+## Connecting your pool
+
+Pool sites sit behind a login and publish no export, so the sync drives a
+browser on your own machine that you have signed into. Your password is never
+typed into this tool, never sent anywhere, and never stored. The session lives
+in a Chrome profile under `survivor/cache/browser/`, which is yours to delete
+whenever you like.
+
+```bash
+survivor/.venv/bin/python -m pip install playwright
+survivor/.venv/bin/python -m playwright install chromium
+
+# once: a window opens, you sign in, then press Enter in the terminal
+python3 -m survivor.splash --login --url "https://your-pool.example.com/contests/…/entries"
+
+# after that, any time:
+python3 -m survivor.splash --me "your name"
+```
+
+`--me` is the text that appears in your own entries' names, which is how your
+entries are told apart from everyone else's. Once it is set it is remembered.
+
+Rather than scrape the page's HTML, which changes whenever a site is
+redesigned, this records the JSON the site's own front end fetches and reads
+the picks out of that. Every capture is saved under `survivor/cache/splash/`
+so you can see exactly what came back. Nothing is written into your plan until
+you review the preview in the dashboard and map each entry.
+
+### Keeping it up to date
+
+The sync also captures what percentage of the pool is on each team, which is
+the input the contrarian setting wants, so it is worth re-running after the
+week's games.
+
+```bash
+python3 -m survivor.splash --watch 30        # re-read every 30 minutes
+```
+
+For something that survives a reboot, on macOS use `launchd`:
+
+```xml
+<!-- ~/Library/LaunchAgents/com.survivor.sync.plist -->
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.survivor.sync</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/path/to/arb-bot/survivor/.venv/bin/python</string>
+    <string>-m</string><string>survivor.splash</string>
+  </array>
+  <key>WorkingDirectory</key><string>/path/to/arb-bot</string>
+  <key>StartInterval</key><integer>1800</integer>
+</dict></plist>
+```
+
+Then `launchctl load ~/Library/LaunchAgents/com.survivor.sync.plist`. On Linux
+a cron line does the same: `*/30 * * * * cd /path/to/arb-bot && survivor/.venv/bin/python -m survivor.splash`.
+
+If the site signs you out, the sync says so and you run `--login` again.
+
+One thing to weigh up: reading a site you are signed into may sit awkwardly
+with its terms of service, even though this only reads your own contest at a
+gentle rate. That is your call to make.
 
 ## If something goes wrong
 

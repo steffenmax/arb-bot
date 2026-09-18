@@ -7,6 +7,25 @@ favorite. Ships as a command-line tool and a local web dashboard.
 
 ## Quick start
 
+Every command below is run from the top of this repository, not from your home
+directory. If you have not cloned it yet:
+
+```bash
+git clone -b claude/fantasy-football-repos-0ulhzj \
+  https://github.com/steffenmax/arb-bot.git ~/arb-bot
+cd ~/arb-bot
+```
+
+If you cloned it earlier, `cd` into it and make sure you are on that branch:
+
+```bash
+cd ~/arb-bot
+git checkout claude/fantasy-football-repos-0ulhzj
+git pull
+```
+
+Then:
+
 ```bash
 ./survivor/start.sh
 ```
@@ -68,6 +87,21 @@ current week, and a refresh button. Config is saved server-side in
 The API contract between the backend and the page is in
 `survivor/dashboard/API.md`. The design system is in
 `survivor/dashboard/DESIGN.md`.
+
+## Sharing a snapshot
+
+To send someone the plan without asking them to run anything:
+
+```bash
+python3 -m survivor.snapshot                     # -> survivor-snapshot.html
+python3 -m survivor.snapshot -o plan.html --refresh
+```
+
+That writes one self-contained HTML file with the stylesheet, both scripts and
+the current payload inlined. It opens straight from disk, and every view and
+every game is there to read. Anything that writes — locking a pick, moving the
+horizon, refreshing a feed — needs the real app, and the page says so in a
+banner across the top.
 
 ## Data sources
 

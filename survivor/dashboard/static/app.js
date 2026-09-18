@@ -8,7 +8,8 @@ const S = window.S = {
         newsFilter: 'all', newsTeam: '', sort: 'survive', hideLow: false, showExcluded: false, chartWeek: null,
         dismissedBanner: null, shortcuts: false },
   prevJoint: null, undo: null, toastTimer: null, gameMap: new Map(), teamIndex: [],
-  mock: new URLSearchParams(location.search).get('mock') === '1',
+  snapshot: typeof window !== 'undefined' && !!window.SURVIVOR_SNAPSHOT,
+  mock: new URLSearchParams(location.search).get('mock') === '1' || (typeof window !== 'undefined' && !!window.SURVIVOR_SNAPSHOT),
 };
 
 const VIEWS = [
@@ -109,6 +110,7 @@ async function api(method, path, body) {
   return j;
 }
 async function loadConfig() {
+  if (S.snapshot) { S.config = JSON.parse(JSON.stringify(window.SURVIVOR_SNAPSHOT.config)); return; }
   if (S.mock) { S.config = { entries: [{ name: 'A', used: [], locks: {}, alive: true }, { name: 'B', used: [], locks: {}, alive: true }, { name: 'C', used: [], locks: {}, alive: true }], picksPerWeek: {}, horizon: 18, decay: 0.03, objective: 'any', topBranches: 10, contrarianWeight: 1, hedge: 0.1, pickPct: {}, overrides: {}, injuryAdjust: true }; return; }
   S.config = await api('GET', '/api/config');
 }
@@ -122,7 +124,9 @@ async function run(opts = {}) {
   S.loading = true; renderChrome();
   try {
     let d;
-    if (S.mock) {
+    if (S.snapshot) {
+      d = JSON.parse(JSON.stringify(window.SURVIVOR_SNAPSHOT));
+    } else if (S.mock) {
       const r = await fetch('mock-dashboard.json'); if (!r.ok) throw new Error('mock-dashboard.json missing');
       d = await r.json(); d.config = { ...d.config, ...S.config };
     } else {
@@ -324,6 +328,12 @@ function renderBanner() {
   const d = S.dash;
   if (!d) { el.hidden = true; return; }
   const issues = []; let cls = '';
+  if (S.snapshot) {
+    el.className = 'banner';
+    el.innerHTML = `<div class="banner-inner"><span><b>Static snapshot</b> taken ${esc(new Date(d.meta.generatedAt).toLocaleString())}. Every view and every game is here to browse, but locking a pick, changing the horizon or refreshing needs the app running on your own machine.</span></div>`;
+    el.hidden = false;
+    return;
+  }
   if (S.error) { issues.push(`Backend error: ${S.error}. Showing the last good plan from ${new Date(d.meta.generatedAt).toLocaleTimeString()}.`); cls = 'error'; }
   const ages = d.meta.dataAge || {};
   const linesAge = ageMinutes(ages.espn), injAge = ageMinutes(ages.injuries), modelAge = ageMinutes(d.meta.generatedAt);

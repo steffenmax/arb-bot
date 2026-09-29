@@ -23,7 +23,9 @@ not financial advice.
 
 ## Profile picture
 
-Crop of the front head close-up from `gideon_master_sheet.png` (see [[Assets Index]]). Deadpan, prism glowing.
+`gideon_profile_headshot.png` (see [[Assets Index]]). Three-quarter view, deadpan, on gray.
+
+![[gideon_profile_headshot.png|300]]
 
 ## Platform settings
 

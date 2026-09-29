@@ -10,6 +10,8 @@ updated: 2026-09-29
 
 # Gideon — Character Bible
 
+![[gideon_profile_headshot.png|320]]
+
 > [!important] Locked
 > Identity, personality and voice rules below are locked. Changes require an entry in [[Decision Log]].
 

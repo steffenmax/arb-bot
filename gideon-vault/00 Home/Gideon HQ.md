@@ -11,6 +11,8 @@ updated: 2026-09-29
 
 **What this is:** an AI-generated, single-character satirical finance account. [[Gideon - Character Bible|Gideon]] talks straight to camera in a 2004 PlayStation 2 cutscene style, delivering hyper-confident "one layer deeper" investment theses on AI, quantum and supply-chain bottlenecks.
 
+![[gideon_balcony_still_v1.jpg]]
+
 **Source of truth:** [[Source/GIDEON Handover 2026-09-29|the handover document]]. When any note here conflicts with it, the handover wins. When the handover conflicts with an older note, the handover wins.
 
 ---

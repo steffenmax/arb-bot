@@ -7,6 +7,9 @@ tags: [gideon, locked, prompt]
 
 Penthouse at the top of a skyscraper above a sea of clouds.
 
+![[gideon_balcony_still_v1.jpg]]
+*First balcony still. Correct: inside the railing, hands on the glass, golden light, city tops in fog. Use as the set reference.*
+
 ## Description block (paste into prompts)
 
 ```

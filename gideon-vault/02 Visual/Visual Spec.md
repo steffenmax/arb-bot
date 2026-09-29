@@ -15,6 +15,8 @@ The approved character sheet is the **4-view A-pose turnaround + 3 head close-up
 
 The **bottom-left front head close-up** is the best single frame for lip-sync / talking shots.
 
+![[gideon_master_sheet.png]]
+
 Regenerate with: [[Character Sheet Prompt]].
 
 ## Look

@@ -1,0 +1,8 @@
+# Obsidian per-machine state
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.trash/
+# large renders stay out of git
+*.mp4
+*.mov

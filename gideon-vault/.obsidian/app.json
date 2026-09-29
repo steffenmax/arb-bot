@@ -1,0 +1,11 @@
+{
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "11 Ideas",
+  "attachmentFolderPath": "02 Visual/assets",
+  "useMarkdownLinks": false,
+  "showFrontmatter": true,
+  "strictLineBreaks": false,
+  "readableLineLength": true,
+  "showUnsupportedFiles": false
+}
